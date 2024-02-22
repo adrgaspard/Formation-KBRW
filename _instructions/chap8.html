@@ -1,0 +1,246 @@
+<style>
+.markdown-body {
+  box-sizing: border-box;
+  min-width: 200px;
+  max-width: 980px;
+margin: 0 auto;
+padding: 45px;
+}
+
+@media (max-width: 767px) {
+  .markdown-body {
+padding: 15px;
+  }
+}
+</style>
+<article class="markdown-body">
+<!DOCTYPE html>
+<html>
+<head>
+  <title>chap8/README.md</title>
+  <link rel="stylesheet" href="../.github-markdown-css/github-markdown.css">
+</head>
+<body>
+<h1 id="user-content-chapter-8---rulex-exfsm-and-have-fun"><a class="heading-link" href="#chapter-8---rulex-exfsm-and-have-fun">Chapter 8 - Rulex, ExFSM and Have fun<span aria-hidden="true" class="octicon octicon-link"></span></a></h1>
+<p><em>Estimated time to finish chapter: 1.5 days.</em></p>
+<p>In this chapter we will enable the payments for our orders. To achieve that we will create a tiny <a href="https://en.wikipedia.org/wiki/Finite-state_machine" rel="nofollow">Finite-state machine (FSM)</a>.</p>
+<p>By doing so, you will discover our home-made library: <a href="http://github.com/kbrw/exfsm">ExFSM</a>.</p>
+<h2 id="user-content-step-0---prerequisite"><a class="heading-link" href="#step-0---prerequisite">Step 0 - Prerequisite<span aria-hidden="true" class="octicon octicon-link"></span></a></h2>
+<h3 id="user-content-the-fsm"><a class="heading-link" href="#the-fsm">The FSM<span aria-hidden="true" class="octicon octicon-link"></span></a></h3>
+<p>The FSM looks like the following schema. It's a very light FSM that allows you to change the status of your command from unpaid to paid.</p>
+<p><a target="_blank" rel="noopener noreferrer" href="../img/FSM.png"><img src="../img/FSM.png" alt="FSM" style="max-width: 100%;"></a></p>
+<h3 id="user-content-initialization-of-riak"><a class="heading-link" href="#initialization-of-riak">Initialization of Riak<span aria-hidden="true" class="octicon octicon-link"></span></a></h3>
+<p>Before anything, we need to assure that all our values in the database have their status set to our FSM default state. We want that all the commands on Riak respect the following property:</p>
+<div class="highlight highlight-source-js"><pre><span class="pl-s1">command</span><span class="pl-kos">.</span><span class="pl-c1">status</span><span class="pl-kos">.</span><span class="pl-c1">state</span> <span class="pl-c1">==</span> <span class="pl-s">'init'</span></pre></div>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-k">def</span> <span class="pl-en">initialize_commands</span><span class="pl-kos">(</span><span class="pl-s1">bucket</span><span class="pl-kos">)</span> <span class="pl-k">do</span> 
+  <span class="pl-v">Riak</span><span class="pl-c1">.</span><span class="pl-en">get_keys</span><span class="pl-kos">(</span><span class="pl-s1">bucket</span><span class="pl-kos">)</span>
+    <span class="pl-c1">|&gt;</span> <span class="pl-v">Enum</span><span class="pl-c1">.</span><span class="pl-en">map</span><span class="pl-kos">(</span>
+      <span class="pl-k">fn</span> <span class="pl-s1">key</span> <span class="pl-c1">-&gt;</span> 
+        <span class="pl-c"># update the json here </span>
+      <span class="pl-s1">end</span><span class="pl-k"></span><span class="pl-kos">)</span>
+  <span class="pl-k">end</span> </pre></div>
+<h3 id="user-content-the-mix-dependencies"><a class="heading-link" href="#the-mix-dependencies">The mix dependencies<span aria-hidden="true" class="octicon octicon-link"></span></a></h3>
+<p>We will need the following dependency in our <strong><code>mix.exs</code></strong></p>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-k">defp</span> <span class="pl-en">deps</span> <span class="pl-k">do</span> 
+  <span class="pl-kos">[</span>
+    <span class="pl-s1">...</span><span class="pl-kos">,</span> 
+    <span class="pl-kos">{</span><span class="pl-pds">:exfsm</span><span class="pl-kos">,</span> <span class="pl-pds">git: </span><span class="pl-s">"https://github.com/kbrw/exfsm.git"</span><span class="pl-kos">}</span>
+  <span class="pl-kos">]</span>
+<span class="pl-k"></span></pre></div>
+<h3 id="user-content-the-macros"><a class="heading-link" href="#the-macros">The Macros<span aria-hidden="true" class="octicon octicon-link"></span></a></h3>
+<p>To use correctly <strong><code>ExFSM</code></strong>, we will need to understand correctly the macros and how
+it is implemented in <strong>Elixir</strong>.</p>
+<p>A Macro in <strong>Elixir</strong> is, like in C/C++, a sort of function executed at the compilation time. They are
+used to generate code or modify it.</p>
+<p>When elixir is compiled, the code is transformed into an AST that you can obtain by using the <code>quote</code>
+keyword.</p>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-en">iex</span><span class="pl-kos">(</span><span class="pl-c1">6</span><span class="pl-kos">)</span><span class="pl-c1">&gt;</span> <span class="pl-k">quote</span> <span class="pl-k">do</span> 
+<span class="pl-en">...</span><span class="pl-kos">(</span><span class="pl-c1">6</span><span class="pl-kos">)</span><span class="pl-c1">&gt;</span> <span class="pl-c1">1</span> <span class="pl-c1">+</span> <span class="pl-c1">2</span> <span class="pl-c1">+</span> <span class="pl-c1">3</span>
+<span class="pl-en">...</span><span class="pl-kos">(</span><span class="pl-c1">6</span><span class="pl-kos">)</span><span class="pl-c1">&gt;</span> <span class="pl-s1">end</span> 
+<span class="pl-kos">{</span><span class="pl-pds">:+</span><span class="pl-kos">,</span> <span class="pl-kos">[</span><span class="pl-pds">context: </span><span class="pl-v">Elixir</span><span class="pl-kos">,</span> <span class="pl-pds">import: </span><span class="pl-v">Kernel</span><span class="pl-kos">]</span><span class="pl-kos">,</span>
+ <span class="pl-kos">[</span><span class="pl-kos">{</span><span class="pl-pds">:+</span><span class="pl-kos">,</span> <span class="pl-kos">[</span><span class="pl-pds">context: </span><span class="pl-v">Elixir</span><span class="pl-kos">,</span> <span class="pl-pds">import: </span><span class="pl-v">Kernel</span><span class="pl-kos">]</span><span class="pl-kos">,</span> <span class="pl-kos">[</span><span class="pl-c1">1</span><span class="pl-kos">,</span> <span class="pl-c1">2</span><span class="pl-kos">]</span><span class="pl-kos">}</span><span class="pl-kos">,</span> <span class="pl-c1">3</span><span class="pl-kos">]</span><span class="pl-kos">}</span>
+<span class="pl-k"></span></pre></div>
+<p>As you can observe, the AST is represented by a tuple of 3 elements. (It can also be one element if
+this element has the same representation, compiled or not (<code>1</code>, <code>"toto"</code>, ...)). The 3 elements are :</p>
+<ul>
+<li>Name of the block</li>
+<li>Context of the block in a list</li>
+<li>Code block in a list of instruction</li>
+</ul>
+<p>When you execute a macro, it takes as input the AST of the code you passed and expects an AST as output.<br>
+Let's create a macro that creates a function from a do block and applies a prefix on the function name.<br>
+It will be used as follows :</p>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-en">defmodified</span> <span class="pl-en">toto</span><span class="pl-kos">(</span><span class="pl-s1">a</span><span class="pl-kos">,</span> <span class="pl-s1">b</span><span class="pl-kos">,</span> <span class="pl-s1">c</span><span class="pl-kos">)</span> <span class="pl-k">do</span> 
+  <span class="pl-s1">a</span> <span class="pl-c1">+</span> <span class="pl-s1">b</span> <span class="pl-c1">+</span> <span class="pl-s1">c</span>
+<span class="pl-k">end</span></pre></div>
+<p>And it will create the function <code>macroed_toto/3</code>.</p>
+<p>First let's observe the generated AST from <code>defmodified</code></p>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-en">iex</span><span class="pl-kos">(</span><span class="pl-c1">1</span><span class="pl-kos">)</span><span class="pl-c1">&gt;</span> <span class="pl-s1">quote</span> <span class="pl-k">do</span>
+<span class="pl-en">...</span><span class="pl-kos">(</span><span class="pl-c1">1</span><span class="pl-kos">)</span>&gt;   <span class="pl-s1">defmodified</span> <span class="pl-en">toto</span><span class="pl-kos">(</span><span class="pl-s1">a</span><span class="pl-kos">,</span> <span class="pl-s1">b</span><span class="pl-kos">,</span> <span class="pl-s1">c</span><span class="pl-kos">)</span> <span class="pl-k">do</span>
+<span class="pl-en">...</span><span class="pl-kos">(</span><span class="pl-c1">1</span><span class="pl-kos">)</span><span class="pl-c1">&gt;</span>     <span class="pl-s1">a</span> <span class="pl-c1">+</span> <span class="pl-s1">b</span> <span class="pl-c1">+</span> <span class="pl-s1">c</span>
+<span class="pl-en">...</span><span class="pl-kos">(</span><span class="pl-c1">1</span><span class="pl-kos">)</span><span class="pl-c1">&gt;</span>   <span class="pl-s1">end</span>
+<span class="pl-en">...</span><span class="pl-kos">(</span><span class="pl-c1">1</span><span class="pl-kos">)</span><span class="pl-c1">&gt;</span> <span class="pl-s1">end</span>
+<span class="pl-kos">{</span><span class="pl-pds">:defmodified</span><span class="pl-kos">,</span> <span class="pl-kos">[</span><span class="pl-kos">]</span><span class="pl-kos">,</span>
+ <span class="pl-kos">[</span><span class="pl-kos">{</span><span class="pl-pds">:toto</span><span class="pl-kos">,</span> <span class="pl-kos">[</span><span class="pl-kos">]</span><span class="pl-kos">,</span> <span class="pl-kos">[</span><span class="pl-kos">{</span><span class="pl-pds">:a</span><span class="pl-kos">,</span> <span class="pl-kos">[</span><span class="pl-kos">]</span><span class="pl-kos">,</span> <span class="pl-v">Elixir</span><span class="pl-kos">}</span><span class="pl-kos">,</span> <span class="pl-kos">{</span><span class="pl-pds">:b</span><span class="pl-kos">,</span> <span class="pl-kos">[</span><span class="pl-kos">]</span><span class="pl-kos">,</span> <span class="pl-v">Elixir</span><span class="pl-kos">}</span><span class="pl-kos">,</span> <span class="pl-kos">{</span><span class="pl-pds">:c</span><span class="pl-kos">,</span> <span class="pl-kos">[</span><span class="pl-kos">]</span><span class="pl-kos">,</span> <span class="pl-v">Elixir</span><span class="pl-kos">}</span><span class="pl-kos">]</span><span class="pl-kos">}</span><span class="pl-kos">,</span>
+  <span class="pl-kos">[</span><span class="pl-pds">do: </span><span class="pl-kos">{</span><span class="pl-pds">:+</span><span class="pl-kos">,</span> <span class="pl-kos">[</span><span class="pl-pds">context: </span><span class="pl-v">Elixir</span><span class="pl-kos">,</span> <span class="pl-pds">import: </span><span class="pl-v">Kernel</span><span class="pl-kos">]</span><span class="pl-kos">,</span>
+    <span class="pl-kos">[</span><span class="pl-kos">{</span><span class="pl-pds">:+</span><span class="pl-kos">,</span> <span class="pl-kos">[</span><span class="pl-pds">context: </span><span class="pl-v">Elixir</span><span class="pl-kos">,</span> <span class="pl-pds">import: </span><span class="pl-v">Kernel</span><span class="pl-kos">]</span><span class="pl-kos">,</span>
+      <span class="pl-kos">[</span><span class="pl-kos">{</span><span class="pl-pds">:a</span><span class="pl-kos">,</span> <span class="pl-kos">[</span><span class="pl-kos">]</span><span class="pl-kos">,</span> <span class="pl-v">Elixir</span><span class="pl-kos">}</span><span class="pl-kos">,</span> <span class="pl-kos">{</span><span class="pl-pds">:b</span><span class="pl-kos">,</span> <span class="pl-kos">[</span><span class="pl-kos">]</span><span class="pl-kos">,</span> <span class="pl-v">Elixir</span><span class="pl-kos">}</span><span class="pl-kos">]</span><span class="pl-kos">}</span><span class="pl-kos">,</span> <span class="pl-kos">{</span><span class="pl-pds">:c</span><span class="pl-kos">,</span> <span class="pl-kos">[</span><span class="pl-kos">]</span><span class="pl-kos">,</span> <span class="pl-v">Elixir</span><span class="pl-kos">}</span><span class="pl-kos">]</span><span class="pl-kos">}</span><span class="pl-kos">]</span><span class="pl-kos">]</span><span class="pl-kos">}</span></pre></div>
+<p>If we consider here that <code>defmodified</code> is our macro, we will see what our macro will take as parameters</p>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-kos">{</span><span class="pl-s1">name</span><span class="pl-kos">,</span> <span class="pl-s1">environment</span><span class="pl-kos">,</span> <span class="pl-s1">params</span><span class="pl-kos">}</span><span class="pl-kos">,</span> <span class="pl-s1">blocks</span></pre></div>
+<p>with here:</p>
+<ul>
+<li>
+<code>name</code> is <code>toto</code>
+</li>
+<li>
+<code>environment</code> the environment module of the macro call</li>
+<li>
+<code>param</code> the list of parameters of the function: <code>[a,b,c]</code>
+</li>
+<li>
+<code>blocks</code> a list containing the instruction of the function</li>
+</ul>
+<p>So, to create the function we will create a <strong>Tuple</strong> of the name <code>:def</code> containing the information of
+the function as the ouput AST should be:</p>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-en">iex</span><span class="pl-kos">(</span><span class="pl-c1">24</span><span class="pl-kos">)</span><span class="pl-c1">&gt;</span> <span class="pl-s1">quote</span> <span class="pl-k">do</span> 
+<span class="pl-en">...</span><span class="pl-kos">(</span><span class="pl-c1">24</span><span class="pl-kos">)</span>&gt;   <span class="pl-s1">def</span> <span class="pl-en">macroed_toto</span><span class="pl-kos">(</span><span class="pl-s1">a</span><span class="pl-kos">,</span> <span class="pl-s1">b</span><span class="pl-kos">)</span> <span class="pl-k">do</span> 
+<span class="pl-en">...</span><span class="pl-kos">(</span><span class="pl-c1">24</span><span class="pl-kos">)</span><span class="pl-c1">&gt;</span>     <span class="pl-s1">a</span> <span class="pl-c1">+</span> <span class="pl-s1">b</span>
+<span class="pl-en">...</span><span class="pl-kos">(</span><span class="pl-c1">24</span><span class="pl-kos">)</span><span class="pl-c1">&gt;</span>   <span class="pl-s1">end</span> 
+<span class="pl-en">...</span><span class="pl-kos">(</span><span class="pl-c1">24</span><span class="pl-kos">)</span><span class="pl-c1">&gt;</span> <span class="pl-s1">end</span> 
+<span class="pl-kos">{</span><span class="pl-pds">:def</span><span class="pl-kos">,</span> <span class="pl-kos">[</span><span class="pl-pds">context: </span><span class="pl-v">Elixir</span><span class="pl-kos">,</span> <span class="pl-pds">import: </span><span class="pl-v">Kernel</span><span class="pl-kos">]</span><span class="pl-kos">,</span>
+ <span class="pl-kos">[</span><span class="pl-kos">{</span><span class="pl-pds">:macroed_toto</span><span class="pl-kos">,</span> <span class="pl-kos">[</span><span class="pl-pds">context: </span><span class="pl-v">Elixir</span><span class="pl-kos">]</span><span class="pl-kos">,</span> <span class="pl-kos">[</span><span class="pl-kos">{</span><span class="pl-pds">:a</span><span class="pl-kos">,</span> <span class="pl-kos">[</span><span class="pl-kos">]</span><span class="pl-kos">,</span> <span class="pl-v">Elixir</span><span class="pl-kos">}</span><span class="pl-kos">,</span> <span class="pl-kos">{</span><span class="pl-pds">:b</span><span class="pl-kos">,</span> <span class="pl-kos">[</span><span class="pl-kos">]</span><span class="pl-kos">,</span> <span class="pl-v">Elixir</span><span class="pl-kos">}</span><span class="pl-kos">]</span><span class="pl-kos">}</span><span class="pl-kos">,</span>
+  <span class="pl-kos">[</span><span class="pl-pds">do: </span><span class="pl-kos">{</span><span class="pl-pds">:+</span><span class="pl-kos">,</span> <span class="pl-kos">[</span><span class="pl-pds">context: </span><span class="pl-v">Elixir</span><span class="pl-kos">,</span> <span class="pl-pds">import: </span><span class="pl-v">Kernel</span><span class="pl-kos">]</span><span class="pl-kos">,</span>
+    <span class="pl-kos">[</span><span class="pl-kos">{</span><span class="pl-pds">:a</span><span class="pl-kos">,</span> <span class="pl-kos">[</span><span class="pl-kos">]</span><span class="pl-kos">,</span> <span class="pl-v">Elixir</span><span class="pl-kos">}</span><span class="pl-kos">,</span> <span class="pl-kos">{</span><span class="pl-pds">:b</span><span class="pl-kos">,</span> <span class="pl-kos">[</span><span class="pl-kos">]</span><span class="pl-kos">,</span> <span class="pl-v">Elixir</span><span class="pl-kos">}</span><span class="pl-kos">]</span><span class="pl-kos">}</span><span class="pl-kos">]</span><span class="pl-kos">]</span><span class="pl-kos">}</span></pre></div>
+<p>We need to create the external tuple with the name set to <code>:def</code> and the environment of the macro definition</p>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-k">defmodule</span> <span class="pl-v">ModifiedMacro</span> <span class="pl-k">do</span>
+  <span class="pl-k">defp</span> <span class="pl-en">concatenate_atoms</span><span class="pl-kos">(</span><span class="pl-s1">a</span><span class="pl-kos">,</span> <span class="pl-s1">b</span><span class="pl-kos">)</span> <span class="pl-k">do</span>
+    <span class="pl-v">Atom</span><span class="pl-c1">.</span><span class="pl-en">to_string</span><span class="pl-kos">(</span><span class="pl-s1">a</span><span class="pl-kos">)</span> <span class="pl-c1">&lt;&gt;</span> <span class="pl-v">Atom</span><span class="pl-c1">.</span><span class="pl-en">to_string</span><span class="pl-kos">(</span><span class="pl-s1">b</span><span class="pl-kos">)</span> <span class="pl-c1">|&gt;</span> <span class="pl-v">String</span><span class="pl-c1">.</span><span class="pl-en">to_atom</span>
+  <span class="pl-k">end</span>
+
+  <span class="pl-k">defmacro</span> <span class="pl-en">defmodified</span><span class="pl-kos">(</span><span class="pl-kos">{</span><span class="pl-s1">name</span><span class="pl-kos">,</span> <span class="pl-s1">env</span><span class="pl-kos">,</span> <span class="pl-s1">param</span><span class="pl-kos">}</span><span class="pl-kos">,</span> <span class="pl-s1">blocks</span><span class="pl-kos">)</span> <span class="pl-k">do</span>
+    <span class="pl-kos">{</span><span class="pl-pds">:def</span><span class="pl-kos">,</span> <span class="pl-s1">env</span><span class="pl-kos">,</span> <span class="pl-kos">[</span><span class="pl-kos">{</span><span class="pl-en">concatenate_atoms</span><span class="pl-kos">(</span><span class="pl-pds">:macroed_</span><span class="pl-kos">,</span> <span class="pl-s1">name</span><span class="pl-kos">)</span><span class="pl-kos">,</span> <span class="pl-s1">env</span><span class="pl-kos">,</span> <span class="pl-s1">param</span><span class="pl-kos">}</span><span class="pl-kos">,</span> <span class="pl-s1">blocks</span><span class="pl-kos">]</span><span class="pl-kos">}</span>
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span>
+
+<span class="pl-k">defmodule</span> <span class="pl-v">User</span> <span class="pl-k">do</span> 
+  <span class="pl-k">require</span> <span class="pl-v">ModifiedMacro</span>
+  <span class="pl-k">import</span> <span class="pl-v">ModifiedMacro</span> 
+  
+  <span class="pl-en">defmodified</span> <span class="pl-en">my_function</span><span class="pl-kos">(</span><span class="pl-s1">a</span><span class="pl-kos">,</span><span class="pl-s1">b</span><span class="pl-kos">)</span> <span class="pl-k">do</span> 
+    <span class="pl-s1">a</span><span class="pl-c1">+</span><span class="pl-s1">b</span>
+  <span class="pl-k">end</span> 
+<span class="pl-k">end</span></pre></div>
+<p>After compilation, the module <strong><code>User</code></strong> implements the function <code>macroed_my_function/2</code></p>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-en">iex</span><span class="pl-kos">(</span><span class="pl-c1">1</span><span class="pl-kos">)</span><span class="pl-c1">&gt;</span> <span class="pl-v">User</span><span class="pl-c1">.</span>
+<span class="pl-en">macroed_my_function</span><span class="pl-c1">/</span><span class="pl-c1">2</span>
+
+<span class="pl-en">iex</span><span class="pl-kos">(</span><span class="pl-c1">1</span><span class="pl-kos">)</span><span class="pl-c1">&gt;</span> <span class="pl-v">User</span><span class="pl-c1">.</span><span class="pl-en">macroed_my_function</span><span class="pl-kos">(</span><span class="pl-c1">1</span><span class="pl-kos">,</span><span class="pl-c1">2</span><span class="pl-kos">)</span>
+<span class="pl-c1">3</span></pre></div>
+<h2 id="user-content-step-1---exfsm"><a class="heading-link" href="#step-1---exfsm">Step 1 - ExFSM<span aria-hidden="true" class="octicon octicon-link"></span></a></h2>
+<p>As we want to understand how the modules works, we will have to go in the source code directly.</p>
+<p>Dive in the source of <a href="https://github.com/kbrw/exfsm"><strong>ExFSM</strong></a> at <code>deps/exfsm</code>.
+In the file <code>exfsm.ex</code> you will find the definition of the macro <code>deftrans</code>.</p>
+<p>This macro adds to your FSM (<code>@fsm</code>) a transition from the <code>initial_state</code> and the <code>final_state</code>.</p>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-en">deftrans</span> <span class="pl-en">initial_state</span><span class="pl-kos">(</span><span class="pl-kos">{</span><span class="pl-pds">:transition_event</span><span class="pl-kos">,</span> <span class="pl-kos">[</span><span class="pl-kos">]</span><span class="pl-kos">}</span><span class="pl-kos">,</span> <span class="pl-s1">object</span><span class="pl-kos">)</span> <span class="pl-k">do</span> 
+  <span class="pl-kos">{</span><span class="pl-pds">:next_state</span><span class="pl-kos">,</span> <span class="pl-pds">:final_state</span><span class="pl-kos">,</span> <span class="pl-s1">order</span><span class="pl-kos">}</span>
+<span class="pl-k"></span></pre></div>
+<p>After defining all the transition of our FSM, we will need to implement the protocol of our FSM.<br>
+<strong>If you are not familiar with the principle of the protocols have a look <a href="https://elixir-lang.org/getting-started/protocols.html" rel="nofollow">here</a>.</strong></p>
+<p>In this implementation, you need to provide the following functions:</p>
+<ul>
+<li>
+<code>state_name</code> that takes as parameter your order and returns as an <strong>Atom</strong> the <strong>current state</strong> of your order.</li>
+<li>
+<code>set_state_name</code> that takes as parameter your order and the name of <strong>the new state</strong>, and returns your order
+with a state updated to the new state.</li>
+<li>
+<code>handlers</code> is the list of the FSM modules that define transitions for a given order (with <code>deftrans</code>). Here we have only our <code>MyFSM</code> module.</li>
+</ul>
+<p>A simple working 2 states FSM is written as follows:</p>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-k">defimpl</span> <span class="pl-v">ExFSM.Machine.State</span><span class="pl-kos">,</span> <span class="pl-pds">for: </span><span class="pl-v">Map</span> <span class="pl-k">do</span>
+  <span class="pl-k">def</span> <span class="pl-en">state_name</span><span class="pl-kos">(</span><span class="pl-s1">order</span><span class="pl-kos">)</span><span class="pl-kos">,</span> <span class="pl-pds">do: </span><span class="pl-v">String</span><span class="pl-c1">.</span><span class="pl-en">to_atom</span><span class="pl-kos">(</span><span class="pl-s1">order</span><span class="pl-kos">[</span><span class="pl-s">"status"</span><span class="pl-kos">]</span><span class="pl-kos">[</span><span class="pl-s">"state"</span><span class="pl-kos">]</span><span class="pl-kos">)</span>
+  <span class="pl-k">def</span> <span class="pl-en">set_state_name</span><span class="pl-kos">(</span><span class="pl-s1">order</span><span class="pl-kos">,</span> <span class="pl-s1">name</span><span class="pl-kos">)</span><span class="pl-kos">,</span> <span class="pl-pds">do: </span><span class="pl-en">put_in</span><span class="pl-kos">(</span><span class="pl-s1">order</span><span class="pl-kos">,</span> <span class="pl-kos">[</span><span class="pl-s">"status"</span><span class="pl-kos">,</span> <span class="pl-s">"state"</span><span class="pl-kos">]</span><span class="pl-kos">,</span> <span class="pl-v">Atom</span><span class="pl-c1">.</span><span class="pl-en">to_string</span><span class="pl-kos">(</span><span class="pl-s1">name</span><span class="pl-kos">)</span><span class="pl-kos">)</span>
+  <span class="pl-k">def</span> <span class="pl-en">handlers</span><span class="pl-kos">(</span><span class="pl-s1">order</span><span class="pl-kos">)</span> <span class="pl-k">do</span>
+    <span class="pl-kos">[</span><span class="pl-v">MyFSM</span><span class="pl-kos">]</span>
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span>
+
+<span class="pl-k">defmodule</span> <span class="pl-v">MyFSM</span> <span class="pl-k">do</span>                                                                                      
+  <span class="pl-k">use</span> <span class="pl-v">ExFSM</span>
+
+  <span class="pl-en">deftrans</span> <span class="pl-en">init</span><span class="pl-kos">(</span><span class="pl-kos">{</span><span class="pl-pds">:process_payment</span><span class="pl-kos">,</span> <span class="pl-kos">[</span><span class="pl-kos">]</span><span class="pl-kos">}</span><span class="pl-kos">,</span> <span class="pl-s1">order</span><span class="pl-kos">)</span> <span class="pl-k">do</span> 
+    <span class="pl-kos">{</span><span class="pl-pds">:next_state</span><span class="pl-kos">,</span> <span class="pl-pds">:not_verified</span><span class="pl-kos">,</span> <span class="pl-s1">order</span><span class="pl-kos">}</span>
+  <span class="pl-k">end</span> 
+
+  <span class="pl-en">deftrans</span> <span class="pl-en">not_verified</span><span class="pl-kos">(</span><span class="pl-kos">{</span><span class="pl-pds">:verfication</span><span class="pl-kos">,</span> <span class="pl-kos">[</span><span class="pl-kos">]</span><span class="pl-kos">}</span><span class="pl-kos">,</span> <span class="pl-s1">order</span><span class="pl-kos">)</span> <span class="pl-k">do</span> 
+    <span class="pl-kos">{</span><span class="pl-pds">:next_state</span><span class="pl-kos">,</span> <span class="pl-pds">:finished</span><span class="pl-kos">,</span> <span class="pl-s1">order</span><span class="pl-kos">}</span>
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span></pre></div>
+<p>Now if we want to make a transition on an order we can call our FSM as:</p>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-kos">{</span><span class="pl-pds">:next_state</span><span class="pl-kos">,</span> <span class="pl-s1">updated_order</span><span class="pl-kos">}</span> <span class="pl-c1">=</span> <span class="pl-v">ExFSM.Machine</span><span class="pl-c1">.</span><span class="pl-en">event</span><span class="pl-kos">(</span><span class="pl-s1">order</span><span class="pl-kos">,</span> <span class="pl-kos">{</span><span class="pl-pds">:process_payment</span><span class="pl-kos">,</span> <span class="pl-kos">[</span><span class="pl-kos">]</span><span class="pl-kos">}</span><span class="pl-kos">)</span></pre></div>
+<hr>
+<h3 id="user-content-explaination-of-the-exfsm-module"><a class="heading-link" href="#explaination-of-the-exfsm-module">Explaination of the ExFSM Module<span aria-hidden="true" class="octicon octicon-link"></span></a></h3>
+<p>Now that we understand how to use the <strong><code>ExFSM</code></strong> module, we will dive into the source code to
+understand exactly what is expected by the macro.</p>
+<div class="highlight highlight-source-elixir"><pre>  <span class="pl-k">defmacro</span> <span class="pl-en">deftrans</span><span class="pl-kos">(</span><span class="pl-kos">{</span><span class="pl-s1">state</span><span class="pl-kos">,</span> <span class="pl-c">_meta</span><span class="pl-kos">,</span> <span class="pl-kos">[</span><span class="pl-kos">{</span><span class="pl-s1">trans</span><span class="pl-kos">,</span> <span class="pl-c">_param</span><span class="pl-kos">}</span> <span class="pl-c1">|</span> <span class="pl-c">_rest</span><span class="pl-kos">]</span><span class="pl-kos">}</span> <span class="pl-c1">=</span> <span class="pl-s1">signature</span><span class="pl-kos">,</span> <span class="pl-s1">body_block</span><span class="pl-kos">)</span> <span class="pl-k">do</span>                      
+<span class="pl-k"></span></pre></div>
+<p>This macro add to the <a href="https://elixir-lang.org/getting-started/module-attributes.html" rel="nofollow">module attribute</a> <code>@fsm</code> (which is a map)
+the transition. This transition key is the tuple <code>{current_state, action}</code> (for instance
+<code>{:init, :process_payment}</code>) and the body of the transition is the tuple <code>{module, do_block}</code>.</p>
+<p>Now let's have a look on how the module works when we call the <code>ExFSM.Machine.event/2</code>.</p>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-k">def</span> <span class="pl-en">event</span><span class="pl-kos">(</span><span class="pl-s1">state</span><span class="pl-kos">,</span> <span class="pl-kos">{</span><span class="pl-s1">action</span><span class="pl-kos">,</span> <span class="pl-s1">params</span><span class="pl-kos">}</span><span class="pl-kos">)</span> <span class="pl-k">do</span>
+<span class="pl-k"></span></pre></div>
+<p>First, the event will search for the handler to execute for this couple <code>{state, action}</code> by executing the
+function <code>find_handler/1</code> which will call <code>find_handler/2</code> with parameters:</p>
+<ul>
+<li>The tuple <code>{current_state, action}</code>
+</li>
+<li>The list of handlers modules returned by the implementation of <code>handlers/1</code> above</li>
+</ul>
+<p>The correct handler will be returned if it is found (the handler is the module in which you defined the transition).
+Then in the <code>event/2</code> function, if the given transition exists in the FSM, the associated do block is
+executed.</p>
+<hr>
+<h2 id="user-content-step-2---handle-the-transitions-genserver"><a class="heading-link" href="#step-2---handle-the-transitions-genserver">Step 2 - Handle the transitions: GenServer<span aria-hidden="true" class="octicon octicon-link"></span></a></h2>
+<p>Now we will see how to use our new FSM in a thread-safe manner.</p>
+<p><strong>Exercise:</strong></p>
+<ul>
+<li>
+<p>Setup a FSM and implement a GenServer module that will handle the transitions of your <code>order FSM</code> in a <strong>transactionnal manner</strong> : the processes can only treat one message at a time on a given order, the rest is kept in their message queue.</p>
+<ul>
+<li>The GenServer will be started on demand by a Supervisor or a DynamicSupervisor</li>
+<li>When a transition needs to be executed on an order :
+<ul>
+<li>A GenServer will be started with the order as its initial state (the id must be provided)</li>
+<li>If a GenServer already exists for this order, we just need to retrieve its PID</li>
+<li>Process the transition in an <code>handle_call</code>
+</li>
+<li>Update the order in Riak</li>
+<li>Return the updated order or an error (<code>:action_unavailable</code>)</li>
+<li>Shutdown the GenServer after 5 minutes of incativity (5 minutes without any transitions on this order)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>Once you're done with that, add a new Web API to your project that triggers a transition on an order, and returns the new order or an error.</p>
+</li>
+<li>
+<p>Link it to your <code>pay</code> button on your <code>orders</code> page.</p>
+</li>
+</ul>
+<p><em>Take some time to play with it, display the status of your order, and make it change once the transaction is done.<br>
+Display an error on your front if the action triggered is not available.</em></p>
+<hr>
+<h2 id="user-content-question-time-"><a class="heading-link" href="#question-time-">Question time !<span aria-hidden="true" class="octicon octicon-link"></span></a></h2>
+<ul>
+<li>What is the signifiaction of <strong>FSM</strong> ?</li>
+<li>Can you explain what <code>quote</code> does ?</li>
+<li>Can you show me in iex how to trigger a FSM transition?</li>
+</ul>
+<hr>
+<p><a href="chap7.html">Prev Chapter</a> <strong>Chapter 8</strong> <a href="chap9.html">Next Chapter</a></p>
+
+</body>
+</html>
+</article>

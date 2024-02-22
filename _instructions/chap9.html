@@ -1,0 +1,200 @@
+<style>
+.markdown-body {
+  box-sizing: border-box;
+  min-width: 200px;
+  max-width: 980px;
+margin: 0 auto;
+padding: 45px;
+}
+
+@media (max-width: 767px) {
+  .markdown-body {
+padding: 15px;
+  }
+}
+</style>
+<article class="markdown-body">
+<!DOCTYPE html>
+<html>
+<head>
+  <title>chap9/README.md</title>
+  <link rel="stylesheet" href="../.github-markdown-css/github-markdown.css">
+</head>
+<body>
+<h1 id="user-content-chapter-9---ewebmachine"><a class="heading-link" href="#chapter-9---ewebmachine">Chapter 9 - EWebMachine<span aria-hidden="true" class="octicon octicon-link"></span></a></h1>
+<p><em>Estimated time to finish chapter: 1.5 days.</em></p>
+<p><a href="https://github.com/kbrw/ewebmachine"><strong>EWebMachine</strong></a> is a home-made <strong>Elixir module</strong> that allows you to design the <strong>routing</strong> of your HTTP server using a <strong>decision tree</strong>.</p>
+<h2 id="user-content-step-0---introduction-to-ewebmachine"><a class="heading-link" href="#step-0---introduction-to-ewebmachine">Step 0 - Introduction to EWebMachine<span aria-hidden="true" class="octicon octicon-link"></span></a></h2>
+<p>The module is available on <a href="https://github.com/kbrw/ewebmachine">Github</a>.</p>
+<p><em><strong>Ewebmachine</strong> is a full rewrite by Kbrw based on <a href="https://github.com/webmachine/webmachine"><strong>Webmachine</strong></a> from basho. It adds a clean DSL and Plug integration.</em></p>
+<p>The objective of <strong>Ewebmachine</strong> is to provide a FSM that allows you to manage the requests made to our <strong>HTTP</strong> API more easily.<br>
+Here is the HTTP state tree:</p>
+<p><a target="_blank" rel="noopener noreferrer" href="../img/Webmachine-FSM.png"><img src="../img/Webmachine-FSM.png" alt="Webmachine-FSM" style="max-width: 100%;"></a></p>
+<p>As you can see on the previous schema, when a request is performed on the server, the information of this connection will go through the FSM and will be associated with a return code and a content result.<br>
+With <strong>Ewebmachine</strong>, you can modify some states of the FSM to easily adapt the standard <strong>REST API</strong> to your need.</p>
+<p>Let's dive into the <strong>Ewebmachine</strong> code and have a look at the example provided on the Github.</p>
+<p>We can observe that the architecture of the code is divided in multiple modules where each module represent either a <strong>Handler</strong>, a <strong>Resource</strong> or the <strong>API</strong>.<br>
+Thus, we will describe each module independently.<br>
+To understand the following paragraph, you will need to open the source code in the folder <code>deps/ewebmachine/lib</code>.</p>
+<h3 id="user-content-handlers"><a class="heading-link" href="#handlers">Handlers<span aria-hidden="true" class="octicon octicon-link"></span></a></h3>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-k">defmodule</span> <span class="pl-v">MyJSONApi</span> <span class="pl-k">do</span> 
+  <span class="pl-k">use</span> <span class="pl-v">Ewebmachine.Builder.Handlers</span>
+  <span class="pl-en">plug</span> <span class="pl-pds">:cors</span>
+  <span class="pl-en">plug</span> <span class="pl-pds">:add_handlers</span><span class="pl-kos">,</span> <span class="pl-pds">init: </span><span class="pl-kos">%</span><span class="pl-kos">{</span><span class="pl-kos">}</span>
+
+  <span class="pl-en">content_types_provided</span> <span class="pl-pds">do: </span><span class="pl-kos">[</span><span class="pl-pds">"application/json": </span><span class="pl-pds">:to_json</span><span class="pl-kos">]</span>
+  <span class="pl-en">defh</span> <span class="pl-s1">to_json</span><span class="pl-kos">,</span> <span class="pl-pds">do: </span><span class="pl-v">Poison</span><span class="pl-c1">.</span><span class="pl-en">encode!</span><span class="pl-kos">(</span><span class="pl-s1">state</span><span class="pl-kos">[</span><span class="pl-pds">:json_obj</span><span class="pl-kos">]</span><span class="pl-kos">)</span>
+
+  <span class="pl-k">defp</span> <span class="pl-en">cors</span><span class="pl-kos">(</span><span class="pl-s1">conn</span><span class="pl-kos">,</span><span class="pl-c">_</span><span class="pl-kos">)</span><span class="pl-kos">,</span> <span class="pl-pds">do: </span>
+    <span class="pl-en">put_resp_header</span><span class="pl-kos">(</span><span class="pl-s1">conn</span><span class="pl-kos">,</span><span class="pl-s">"Access-Control-Allow-Origin"</span><span class="pl-kos">,</span><span class="pl-s">"*"</span><span class="pl-kos">)</span>
+<span class="pl-k">end</span></pre></div>
+<p><em>As we can see, this module is a <strong><code>Builder.Handlers</code></strong> module.</em></p>
+<p>First, with <code>plug :cors</code> we are using the default <strong><code>Plug</code></strong> module as described in the <a href="chapt2.html">second chapter</a>: this way we reference the custom <code>:cors</code> function below to be executed before every other <code>plug</code> in our module.</p>
+<p>Now let's have a look into the library in the file, <code>builder.handlers.ex</code>. This file implements the default handlers and add the possibility to create custom handlers: you will need to use the <code>plug :add_handlers</code> defined in the <strong><code>Ewebmachine.Builder.Handlers</code></strong>:</p>
+<ul>
+<li>This function replaces the state of the connection by the parameters provided as <code>:init</code> (here <code>%{}</code>).</li>
+<li>It then puts all the resources_handlers we defined (or the default ones) into a private property of the <code>conn</code>.</li>
+<li>To define a custom handler, we can use the macro <code>defh</code> (cf source).</li>
+</ul>
+<p>Last, let's understand what the <code>handler_quote</code> private function do when called in <code>defh</code>:</p>
+<ul>
+<li>It adds the referenced handler to the map <code>@resource_handlers</code>
+</li>
+<li>It defines the function of the name of your macro (here <code>to_json</code>), and wrap the response to return when it will be called by <strong><code>Plug</code></strong>.</li>
+</ul>
+<p>To conclude, this adds all the default handlers <strong>plus</strong> your custom handlers to our <strong><code>Ewebmachine.Builder.Handlers</code></strong> module.</p>
+<p><em>All the default handlers are defined in the file <code>handlers.ex</code>, so if you need to see the expected output of an handler, open the file ;)</em></p>
+<h3 id="user-content-resources"><a class="heading-link" href="#resources">Resources<span aria-hidden="true" class="octicon octicon-link"></span></a></h3>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-k">defmodule</span> <span class="pl-v">ErrorRoutes</span> <span class="pl-k">do</span>
+  <span class="pl-k">use</span> <span class="pl-v">Ewebmachine.Builder.Resources</span> <span class="pl-kos">;</span> <span class="pl-s1">resources_plugs</span>
+
+  <span class="pl-en">resource</span> <span class="pl-s">"/error/:status"</span> <span class="pl-k">do</span> <span class="pl-kos">%</span><span class="pl-kos">{</span><span class="pl-pds">s: </span><span class="pl-en">elem</span><span class="pl-kos">(</span><span class="pl-v">Integer</span><span class="pl-c1">.</span><span class="pl-en">parse</span><span class="pl-kos">(</span><span class="pl-s1">status</span><span class="pl-kos">)</span><span class="pl-kos">,</span><span class="pl-c1">0</span><span class="pl-kos">)</span><span class="pl-kos">}</span> <span class="pl-k">after</span> 
+    <span class="pl-en">content_types_provided</span> <span class="pl-pds">do: </span><span class="pl-kos">[</span><span class="pl-pds">'text/html': </span><span class="pl-pds">:to_html</span><span class="pl-kos">,</span> <span class="pl-pds">'application/json': </span><span class="pl-pds">:to_json</span><span class="pl-kos">]</span>
+
+    <span class="pl-en">defh</span> <span class="pl-s1">to_html</span><span class="pl-kos">,</span> <span class="pl-pds">do: </span><span class="pl-s">"&lt;h1&gt; Error ! : '<span class="pl-s1"><span class="pl-kos">#{</span><span class="pl-v">Ewebmachine.Core.Utils</span><span class="pl-c1">.</span><span class="pl-en">http_label</span><span class="pl-kos">(</span><span class="pl-s1">state</span><span class="pl-c1">.</span><span class="pl-en">s</span><span class="pl-kos">)</span><span class="pl-kos">}</span></span>'&lt;/h1&gt;"</span>
+    <span class="pl-en">defh</span> <span class="pl-s1">to_json</span><span class="pl-kos">,</span> <span class="pl-pds">do: </span><span class="pl-s">~s<span class="pl-s">/</span>{"error": <span class="pl-s1"><span class="pl-kos">#{</span><span class="pl-s1">state</span><span class="pl-c1">.</span><span class="pl-en">s</span><span class="pl-kos">}</span></span>, "label": "<span class="pl-s1"><span class="pl-kos">#{</span><span class="pl-v">Ewebmachine.Core.Utils</span><span class="pl-c1">.</span><span class="pl-en">http_label</span><span class="pl-kos">(</span><span class="pl-s1">state</span><span class="pl-c1">.</span><span class="pl-en">s</span><span class="pl-kos">)</span><span class="pl-kos">}</span></span>"}<span class="pl-s">/</span></span>
+    
+    <span class="pl-en">finish_request</span> <span class="pl-pds">do: </span><span class="pl-kos">{</span><span class="pl-pds">:halt</span><span class="pl-kos">,</span><span class="pl-s1">state</span><span class="pl-c1">.</span><span class="pl-en">s</span><span class="pl-kos">}</span>
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span></pre></div>
+<p>Let's now have a look into the <strong><code>Ewebmachine.Builder.Resources</code></strong> module.<br>
+As we can see in the previous code, the module defines 2 macros <code>resources_plugs</code> and <code>resource</code>.<br>
+The <strong><code>Ewebmachine.Builder.Resources</code></strong> can take parameters when it is called using <code>use</code>.</p>
+<ul>
+<li>
+<code>resources_plugs</code> allows to modify the behavior of the module with some option. Here we use the default behavior. The default behavior adds the following plug:
+<ul>
+<li><code>:resource_match</code></li>
+<li><code>Ewebmachine.Plug.Run</code></li>
+<li><code>Ewebmachine.Plug.Send</code></li>
+</ul>
+</li>
+<li>
+<code>resource</code> creates a new module named from the caller module and the route given (<code>route_as_mod/1</code>).
+<ul>
+<li>This module contains a <strong><code>Ewebmachine.Builder.Handlers</code></strong> module.</li>
+<li>The <code>do:</code> block of your resource macro is added in the <code>:wm_routes</code> attribute of your module. These routes are used in the <code>__before_compile__</code> to define the <code>Plug.Router.match</code> function associated with the routes.</li>
+<li>The <code>:after</code> block is unquoted as the body of the new module (so it behave as described before for the <strong><code>MyJSONAPI</code></strong> module.</li>
+</ul>
+</li>
+</ul>
+<p><em>More examples:</em></p>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-k">defmodule</span> <span class="pl-v">FullApi</span> <span class="pl-k">do</span>
+  <span class="pl-k">use</span> <span class="pl-v">Ewebmachine.Builder.Resources</span>
+  <span class="pl-k">if</span> <span class="pl-v">Mix</span><span class="pl-c1">.</span><span class="pl-en">env</span> <span class="pl-c1">==</span> <span class="pl-pds">:dev</span><span class="pl-kos">,</span> <span class="pl-pds">do: </span><span class="pl-en">plug</span> <span class="pl-v">Ewebmachine.Plug.Debug</span>
+  <span class="pl-en">resources_plugs</span> <span class="pl-pds">error_forwarding: </span><span class="pl-s">"/error/:status"</span><span class="pl-kos">,</span> <span class="pl-pds">nomatch_404: </span><span class="pl-c1">true</span>
+  <span class="pl-en">plug</span> <span class="pl-v">ErrorRoutes</span>
+
+  <span class="pl-en">resource</span> <span class="pl-s">"/hello/:name"</span> <span class="pl-k">do</span> <span class="pl-kos">%</span><span class="pl-kos">{</span><span class="pl-pds">name: </span><span class="pl-s1">name</span><span class="pl-kos">}</span> <span class="pl-k">after</span> 
+    <span class="pl-en">content_types_provided</span> <span class="pl-pds">do: </span><span class="pl-kos">[</span><span class="pl-pds">'application/xml': </span><span class="pl-pds">:to_xml</span><span class="pl-kos">]</span>
+    <span class="pl-en">defh</span> <span class="pl-s1">to_xml</span><span class="pl-kos">,</span> <span class="pl-pds">do: </span><span class="pl-s">"&lt;Person&gt;&lt;name&gt;<span class="pl-s1"><span class="pl-kos">#{</span><span class="pl-s1">state</span><span class="pl-c1">.</span><span class="pl-en">name</span><span class="pl-kos">}</span></span>&lt;/name&gt;"</span>
+  <span class="pl-k">end</span>
+
+  <span class="pl-en">resource</span> <span class="pl-s">"/hello/json/:name"</span> <span class="pl-k">do</span> <span class="pl-kos">%</span><span class="pl-kos">{</span><span class="pl-pds">name: </span><span class="pl-s1">name</span><span class="pl-kos">}</span> <span class="pl-k">after</span> 
+    <span class="pl-en">plug</span> <span class="pl-v">MyJSONApi</span> <span class="pl-c">#this is also a plug pipeline</span>
+    <span class="pl-en">allowed_methods</span> <span class="pl-pds">do: </span><span class="pl-kos">[</span><span class="pl-s">"GET"</span><span class="pl-kos">,</span><span class="pl-s">"DELETE"</span><span class="pl-kos">]</span>
+    <span class="pl-en">resource_exists</span> <span class="pl-pds">do: </span><span class="pl-en">pass</span><span class="pl-kos">(</span><span class="pl-kos">(</span><span class="pl-s1">user</span><span class="pl-c1">=</span><span class="pl-v">DB</span><span class="pl-c1">.</span><span class="pl-en">get</span><span class="pl-kos">(</span><span class="pl-s1">state</span><span class="pl-c1">.</span><span class="pl-en">name</span><span class="pl-kos">)</span><span class="pl-kos">)</span> <span class="pl-c1">!==</span> <span class="pl-c1">nil</span><span class="pl-kos">,</span> <span class="pl-pds">json_obj: </span><span class="pl-s1">user</span><span class="pl-kos">)</span>
+    <span class="pl-en">delete_resource</span> <span class="pl-pds">do: </span><span class="pl-v">DB</span><span class="pl-c1">.</span><span class="pl-en">delete</span><span class="pl-kos">(</span><span class="pl-s1">state</span><span class="pl-c1">.</span><span class="pl-en">name</span><span class="pl-kos">)</span>
+  <span class="pl-k">end</span>
+
+  <span class="pl-en">resource</span> <span class="pl-s">"/static/*path"</span> <span class="pl-k">do</span> <span class="pl-kos">%</span><span class="pl-kos">{</span><span class="pl-pds">path: </span><span class="pl-v">Enum</span><span class="pl-c1">.</span><span class="pl-en">join</span><span class="pl-kos">(</span><span class="pl-s1">path</span><span class="pl-kos">,</span><span class="pl-s">"/"</span><span class="pl-kos">)</span><span class="pl-kos">}</span> <span class="pl-k">after</span>
+    <span class="pl-en">resource_exists</span> <span class="pl-pds">do:</span>
+<span class="pl-pds"></span>      <span class="pl-v">File</span><span class="pl-c1">.</span><span class="pl-en">regular?</span><span class="pl-kos">(</span><span class="pl-en">path</span> <span class="pl-s1">state</span><span class="pl-c1">.</span><span class="pl-en">path</span><span class="pl-kos">)</span>
+    <span class="pl-en">content_types_provided</span> <span class="pl-pds">do:</span>
+<span class="pl-pds"></span>      <span class="pl-kos">[</span><span class="pl-kos">{</span><span class="pl-s1">state</span><span class="pl-c1">.</span><span class="pl-en">path</span><span class="pl-c1">|&gt;</span><span class="pl-v">Plug.MIME</span><span class="pl-c1">.</span><span class="pl-en">path</span><span class="pl-c1">|&gt;</span><span class="pl-en">default_plain</span><span class="pl-kos">,</span><span class="pl-pds">:to_content</span><span class="pl-kos">}</span><span class="pl-kos">]</span>
+    <span class="pl-en">defh</span> <span class="pl-s1">to_content</span><span class="pl-kos">,</span> <span class="pl-pds">do:</span>
+<span class="pl-pds"></span>      <span class="pl-v">File</span><span class="pl-c1">.</span><span class="pl-en">stream!</span><span class="pl-kos">(</span><span class="pl-en">path</span><span class="pl-kos">(</span><span class="pl-s1">state</span><span class="pl-c1">.</span><span class="pl-en">path</span><span class="pl-kos">)</span><span class="pl-kos">,</span><span class="pl-kos">[</span><span class="pl-kos">]</span><span class="pl-kos">,</span><span class="pl-c1">300_000_000</span><span class="pl-kos">)</span>
+    <span class="pl-k">defp</span> <span class="pl-en">path</span><span class="pl-kos">(</span><span class="pl-s1">relative</span><span class="pl-kos">)</span><span class="pl-kos">,</span> <span class="pl-pds">do: </span><span class="pl-s">"<span class="pl-s1"><span class="pl-kos">#{</span><span class="pl-v">:code</span><span class="pl-c1">.</span><span class="pl-en">priv_dir</span> <span class="pl-pds">:ewebmachine_example</span><span class="pl-kos">}</span></span>/web/<span class="pl-s1"><span class="pl-kos">#{</span><span class="pl-s1">relative</span><span class="pl-kos">}</span></span>"</span>
+    <span class="pl-k">defp</span> <span class="pl-en">default_plain</span><span class="pl-kos">(</span><span class="pl-s">"application/octet-stream"</span><span class="pl-kos">)</span><span class="pl-kos">,</span> <span class="pl-pds">do: </span><span class="pl-s">"text/plain"</span>
+    <span class="pl-k">defp</span> <span class="pl-en">default_plain</span><span class="pl-kos">(</span><span class="pl-s1">type</span><span class="pl-kos">)</span><span class="pl-kos">,</span> <span class="pl-pds">do: </span><span class="pl-s1">type</span>
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span></pre></div>
+<p><strong>Go and look inside the source code of EWebMachine to fully understand the processes behind the use of the macros like <code>resource</code>, etc.</strong></p>
+<ul>
+<li>
+<code>core.ex</code>: In this file you will find the entry point of the <strong>Ewebmachine</strong>'s FSM. All the transitions of the FSM are defined with the macro <code>decision</code> which is defined in the module <strong><code>Ewebmachine.Core.DSL</code></strong>.</li>
+<li>
+<code>core.dsl.ex</code>: As you see, the <code>decision</code> macro only verify that the signature has 2 parameters and before executing the body of the macro in the function of the same name, will execute this code which will modify <code>conn</code> contained variable by the content of the <code>Ewebmachine.Log.debug_decision</code> return:</li>
+</ul>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-k">unquote</span><span class="pl-kos">(</span><span class="pl-s1">conn</span><span class="pl-kos">)</span> <span class="pl-c1">=</span> <span class="pl-v">Ewebmachine.Log</span><span class="pl-c1">.</span><span class="pl-en">debug_decision</span><span class="pl-kos">(</span><span class="pl-k">unquote</span><span class="pl-kos">(</span><span class="pl-s1">conn</span><span class="pl-kos">)</span><span class="pl-kos">,</span> <span class="pl-k">unquote</span><span class="pl-kos">(</span><span class="pl-s1">name</span><span class="pl-kos">)</span><span class="pl-kos">)</span></pre></div>
+<ul>
+<li>
+<code>plug.run.ex</code>: You will find the <code>call/2</code> that calls the entry point of the FSM <code>v3/2</code>. As seen before, the module <strong><code>Plug.Run</code></strong> is provided as a <code>plug</code>.</li>
+<li>
+<code>plug.send.ex</code>: this module implements a plug used to create the answer for the client and send it.</li>
+</ul>
+<h1 id="user-content-step-1---hello-world-with-ewebmachine"><a class="heading-link" href="#step-1---hello-world-with-ewebmachine">Step 1 - Hello World with EwebMachine<span aria-hidden="true" class="octicon octicon-link"></span></a></h1>
+<p>Now that you understand how <strong>EwebMachine</strong> works, let's setup a quick server on the port <code>4002</code> that will return a hello page to the user.</p>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-k">defmodule</span> <span class="pl-v">Server.EwebRouter</span> <span class="pl-k">do</span>
+  <span class="pl-k">use</span> <span class="pl-v">Ewebmachine.Builder.Resources</span>
+  <span class="pl-en">plug</span> <span class="pl-pds">:resource_match</span>
+  <span class="pl-en">plug</span> <span class="pl-v">Ewebmachine.Plug.Run</span>
+  <span class="pl-en">plug</span> <span class="pl-v">Ewebmachine.Plug.Send</span>
+  <span class="pl-en">resource</span> <span class="pl-s">"/hello/:name"</span> <span class="pl-k">do</span> <span class="pl-kos">%</span><span class="pl-kos">{</span><span class="pl-pds">name: </span><span class="pl-s1">name</span><span class="pl-kos">}</span> <span class="pl-k">after</span>
+    <span class="pl-en">content_types_provided</span> <span class="pl-pds">do: </span><span class="pl-kos">[</span><span class="pl-pds">'text/html': </span><span class="pl-pds">:to_html</span><span class="pl-kos">]</span>
+    <span class="pl-en">defh</span> <span class="pl-s1">to_html</span><span class="pl-kos">,</span> <span class="pl-pds">do: </span><span class="pl-s">"&lt;html&gt;&lt;h1&gt;Hello <span class="pl-s1"><span class="pl-kos">#{</span><span class="pl-s1">state</span><span class="pl-c1">.</span><span class="pl-en">name</span><span class="pl-kos">}</span></span>&lt;/h1&gt;&lt;/html&gt;"</span>
+  <span class="pl-k">end</span>
+<span class="pl-k">end</span></pre></div>
+<p>As we have seen in the source, we need to call the different plugs <code>:resource_match</code>,
+<strong><code>Ewebmachine.Plug.Run</code></strong> and <strong><code>Ewebmachine.Plug.Send</code></strong> manually if they are not called in the
+injected source.<br>
+Then we need to define our resource. Here, it is the <code>Hello World!</code> resource defined the same way as
+the <strong><code>MyJSONApi</code></strong> in the library example.<br>
+Now we will add some debug feature when we are in development mode:</p>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-k">defmodule</span> <span class="pl-v">Server.EwebRouter</span> <span class="pl-k">do</span>
+<span class="pl-k">use</span> <span class="pl-v">Ewebmachine.Builder.Resources</span>
+<span class="pl-k">if</span> <span class="pl-v">Mix</span><span class="pl-c1">.</span><span class="pl-en">env</span> <span class="pl-c1">==</span> <span class="pl-pds">:dev</span><span class="pl-kos">,</span> <span class="pl-pds">do: </span><span class="pl-en">plug</span> <span class="pl-v">Ewebmachine.Plug.Debug</span>
+<span class="pl-kos">[</span><span class="pl-s1">...</span><span class="pl-kos">]</span>
+<span class="pl-k"></span></pre></div>
+<p><em>You can check if the debug is activated by calling in your <code>iex</code> the function <code>Mix.env/0</code>.</em></p>
+<p>Running your program, you should have at the address <code>http://localhost:&lt;your_port&gt;/wm_debug</code> the list of <strong>all</strong> the queries
+you have done to your <strong><code>Ewebmachine</code></strong> module. This is really useful when we need to debug our web app.</p>
+<p>If we add to our project a little error handling we will have a complete version of our first <strong><code>Ewebmachine</code></strong> module.</p>
+<div class="highlight highlight-source-elixir"><pre><span class="pl-en">resources_plugs</span> <span class="pl-pds">error_forwarding: </span><span class="pl-s">"/error/:status"</span><span class="pl-kos">,</span> <span class="pl-pds">nomatch_404: </span><span class="pl-c1">true</span></pre></div>
+<p>The <code>resource_plugs</code> macro provides to our module the 3 required <code>plug</code> to make the module work (which you can now remove):</p>
+<ul>
+<li><code>:resource_match</code></li>
+<li><strong><code>Ewebmachine.Plug.Send</code></strong></li>
+<li><strong><code>Ewebmachine.Plug.Send</code></strong></li>
+</ul>
+<p><em>If you want to learn more about Error Handling, go take a look at the files <code>plug.error_as_*.ex</code>.</em></p>
+<h1 id="user-content-step-2---put-reaxt-and-our-api-on-the-ewebmachine-module"><a class="heading-link" href="#step-2---put-reaxt-and-our-api-on-the-ewebmachine-module">Step 2 - Put Reaxt and our API on the Ewebmachine module<span aria-hidden="true" class="octicon octicon-link"></span></a></h1>
+<hr>
+<p><strong>Exercise:</strong></p>
+<ul>
+<li>Inspiring yourself from the previous provided code, change your <strong>Router</strong> module to now use <strong>EWebmachine</strong> instead of <strong>Plug.Router</strong>
+</li>
+</ul>
+<hr>
+<h2 id="user-content-question-time-"><a class="heading-link" href="#question-time-">Question time !<span aria-hidden="true" class="octicon octicon-link"></span></a></h2>
+<ul>
+<li>What is a <strong>decision tree</strong> ?</li>
+<li>Why use <strong>EWebaMachine</strong> instead of <strong>Plug.Router</strong> ?</li>
+<li>What does <strong>DSL</strong> stand for ?</li>
+</ul>
+<hr>
+<p><a href="chap8.html">Prev Chapter</a> <strong>Chapter 9</strong> <a href="chap10.html">Next Chapter</a></p>
+
+</body>
+</html>
+</article>

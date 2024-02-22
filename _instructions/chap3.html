@@ -1,0 +1,395 @@
+<style>
+.markdown-body {
+  box-sizing: border-box;
+  min-width: 200px;
+  max-width: 980px;
+margin: 0 auto;
+padding: 45px;
+}
+
+@media (max-width: 767px) {
+  .markdown-body {
+padding: 15px;
+  }
+}
+</style>
+<article class="markdown-body">
+<!DOCTYPE html>
+<html>
+<head>
+  <title>chap3/README.md</title>
+  <link rel="stylesheet" href="../.github-markdown-css/github-markdown.css">
+</head>
+<body>
+<h1 id="user-content-chapter-3-the-four-horsemen-of-the-apocalypse-react-webpack-babel-and-jsxz"><a class="heading-link" href="#chapter-3-the-four-horsemen-of-the-apocalypse-react-webpack-babel-and-jsxz">Chapter 3: The Four Horsemen of the Apocalypse: React, Webpack, Babel and JSXZ<span aria-hidden="true" class="octicon octicon-link"></span></a></h1>
+<p><em>Estimated time to finish chapter: 1.5 days.</em></p>
+<p>This chapter will introduce you to React and the tool chain that goes with it.</p>
+<h2 id="user-content-step-0---the-white-rider-react"><a class="heading-link" href="#step-0---the-white-rider-react">Step 0 - The White Rider: React<span aria-hidden="true" class="octicon octicon-link"></span></a></h2>
+<h3 id="user-content-the-righteous-vanilla-js"><a class="heading-link" href="#the-righteous-vanilla-js">The Righteous Vanilla JS<span aria-hidden="true" class="octicon octicon-link"></span></a></h3>
+<p>Alongside HTML and CSS, <a href="https://en.wikipedia.org/wiki/JavaScript" rel="nofollow"><strong>Javascript</strong></a> is one of the core technologies of the World Wide Web.<br>
+It enable interactive web pages and is an essential part of web applications. The vast majority of websites use it, and major web browsers have a dedicated JavaScript engine to execute it.</p>
+<hr>
+<p><strong>Exercise:</strong></p>
+<p>We will explore its possibilities with a little example.<br>
+Create a <code>web</code> subdirectory inside your <strong>mix</strong> project, we will work from here.</p>
+<p>First, let's create a really simple <strong>HTML</strong> file called <code>index.html</code></p>
+<ul>
+<li>Create a big header with the text "Hello world" in it</li>
+<li>Add a link to the website <code>kbrw.fr</code> with the text "KBRW Website"</li>
+</ul>
+<p>Open it with your favorite web browser and you should obtain something like this:
+<a target="_blank" rel="noopener noreferrer" href="../img/the_righteous.png"><img src="../img/the_righteous.png" alt="container" style="max-width: 100%;"></a></p>
+<p>Now let's add some Javascript in it.</p>
+<ul>
+<li>Add a button with the text <code>Click me</code>
+</li>
+<li>When you will click on this button, the page should display an alert with the content <code>Hello world !</code>
+</li>
+<li>Your Javascript code <strong>must</strong> be inside a file named <code>script.js</code>
+</li>
+<li>The alert code <strong>must</strong> be inside a Javascript function</li>
+</ul>
+<p>And here it is ! You have a great web page, with some JS code executed inside it ! Bravo !</p>
+<hr>
+<h3 id="user-content-react-the-infectuous-js-library"><a class="heading-link" href="#react-the-infectuous-js-library">React, the Infectuous JS Library<span aria-hidden="true" class="octicon octicon-link"></span></a></h3>
+<p>To help us create wonderful User Interfaces, we`re going to use a library named <strong>React</strong>.<br>
+<em>Go and read more about it <a href="https://reactjs.org/" rel="nofollow">here</a></em></p>
+<p><strong>At this point, it is EXTREMELY IMPORTANT to understand the notions and use of Components, Props and State in React. So please read some documentation ;)</strong></p>
+<hr>
+<p><strong>Exercise:</strong></p>
+<p>We're going to use <strong>React</strong> to manipulate the DOM of our web page.</p>
+<ul>
+<li>Let's import the library inside our index.html
+<ul>
+<li>Add the following code <code>&lt;script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"&gt;&lt;/script&gt;</code>
+</li>
+<li>Do the same for <code>https://unpkg.com/react-dom@16/umd/react-dom.production.min.js</code>
+</li>
+<li>This will import the script <code>reac.production.min.js</code> from the <code>unpkg.com</code> website</li>
+</ul>
+</li>
+<li>Now, in our <code>script.js</code> file, change the function that used to create an alert so that instead it will create a new <code>div</code> with the content <code>Hey I was created from React!</code>
+</li>
+<li>You <strong>must</strong> use the function <code>React.createElement</code>
+</li>
+<li>Create an empty <code>div</code> with the <code>id=root</code>, you will render your element inside it using <code>ReactDOM</code>
+</li>
+</ul>
+<p><em>Play a little bit with it !</em></p>
+<hr>
+<h3 id="user-content-as-empire-prosperity-jsx"><a class="heading-link" href="#as-empire-prosperity-jsx">As Empire prosperity, JSX<span aria-hidden="true" class="octicon octicon-link"></span></a></h3>
+<p><em>According to Edward Bishop Elliott's interpretation, that the Four Horsemen represent a prophecy of the subsequent history of the Roman Empire, the white color of this horse signifies triumph, prosperity and health in the political Roman body</em></p>
+<p>So, pretty cool han ? :) Ready to create Web App with 10000 calls to <code>React.createElement</code> ? :)</p>
+<p>Don't worry, <strong>React</strong> thought about you ! <a href="https://reactjs.org/docs/introducing-jsx.html" rel="nofollow">JSX</a> is here to save the day.</p>
+<p>It is a <strong>syntax extension</strong> to JavaScript.<br>
+It allows you to write code like <code>&lt;div&gt;&lt;h1&gt;Hello&lt;/h1&gt;&lt;/div&gt;</code> <strong>INSIDE you JS script</strong>.</p>
+<p>Let's go, write some <strong>JSX</strong> inside your <code>script.js</code> file and see what happened !</p>
+<p>Perfect right ? No ? Got this <code>SyntaxError: expected expression, got '&lt;'</code> ? :/<br>
+It's because <strong>JSX is a syntax extension</strong>, and not actual JS.</p>
+<p>Javascript does not natively supports JSX syntax. We're going to have to use some new tools to support it.</p>
+<h3 id="user-content-lets-get-ready-for-war"><a class="heading-link" href="#lets-get-ready-for-war">Let's get ready for War<span aria-hidden="true" class="octicon octicon-link"></span></a></h3>
+<h4 id="user-content-nodejs-and-npm"><a class="heading-link" href="#nodejs-and-npm">NodeJS and NPM<span aria-hidden="true" class="octicon octicon-link"></span></a></h4>
+<p>To <strong>transform</strong> our Javascript so that it can support JSX, we're going to use tools like <a href="https://webpack.js.org/" rel="nofollow">Webpack</a> by the intermediary of <a href="https://www.npmjs.com/" rel="nofollow">NPM</a> and <a href="https://nodejs.org/en/" rel="nofollow">NodeJS</a>.</p>
+<p>Install NodeJS, following the way recommended for your Operating System. Current compatible version : 16.10.0.</p>
+<p>Now verify that everything went well and try:</p>
+<div class="highlight highlight-source-shell"><pre>    $<span class="pl-k">&gt;</span> npm  
+    $<span class="pl-k">&gt;</span> node</pre></div>
+<p>If this commands are working, that's it your done installing NodeJS and NPM !</p>
+<h4 id="user-content-react"><a class="heading-link" href="#react">React<span aria-hidden="true" class="octicon octicon-link"></span></a></h4>
+<p>We will create a <strong>React</strong> project, using <code>npm</code>, and place it inside our <strong>mix</strong> project, in the folder <code>web</code></p>
+<div class="highlight highlight-source-shell"><pre>  $<span class="pl-k">&gt;</span> npm init react-app web/  
+  $<span class="pl-k">&gt;</span> ls  
+  node_modules  package.json  package-lock.json  public  README.md  src</pre></div>
+<p>We need to modify the architecture of our project compared to a common <strong>React</strong> application.<br>
+You can remove the following directories and files:</p>
+<ul>
+<li>
+<p><code>public/</code> -&gt; we don't need <strong>HTML</strong> examples</p>
+</li>
+<li>
+<p><code>src/</code> -&gt; we don't need source example</p>
+</li>
+<li>
+<p><code>.gitignore</code> -&gt; we are already in a git</p>
+</li>
+<li>
+<p><code>.git/</code> -&gt; idem</p>
+</li>
+<li>
+<p><code>README.md</code> -&gt; no need for it</p>
+<h4 id="user-content-dependencies"><a class="heading-link" href="#dependencies">Dependencies<span aria-hidden="true" class="octicon octicon-link"></span></a></h4>
+</li>
+</ul>
+<p>All the dependencies of your <code>npm</code> project are written inside the <a href="https://docs.npmjs.com/creating-a-package-json-file" rel="nofollow"><code>package.json</code> file</a>.</p>
+<p>When you install a dependency, it will write it inside this file which is the equivalent of the file <code>mix.exs</code> in a <strong>mix</strong> project. It will save all the dependencies your project needs to be executed. And if you want to reinstall them, just type:</p>
+<pre><code>npm install 
+</code></pre>
+<p>The downloaded dependencies are placed in the folder <strong><code>node_modules</code></strong>. To install a new dependency of your project, you have to type</p>
+<pre><code>npm install &lt;dep_name&gt;
+</code></pre>
+<p>which will place it in the <code>dependencies</code> fields of your <code>package.json</code>.<br>
+You can also sometimes want to install <code>devDependencies</code> which are different from the normal ones and not installed in your final project. This solution can be useful for transpiling lib. You can find a more complete answer <a href="https://stackoverflow.com/questions/18875674/whats-the-difference-between-dependencies-devdependencies-and-peerdependencies" rel="nofollow">here</a>.
+This dependencies installation method can be achieved by typing</p>
+<pre><code>npm install &lt;dep_name&gt; --save-dev
+</code></pre>
+<p>Let's open our <code>package.json</code> which should look like:</p>
+<div class="highlight highlight-source-js"><pre><span class="pl-kos">{</span>
+  <span class="pl-s">"name"</span>: <span class="pl-s">"web"</span><span class="pl-kos">,</span>
+  <span class="pl-s">"version"</span>: <span class="pl-s">"0.1.0"</span><span class="pl-kos">,</span>
+  <span class="pl-s">"private"</span>: <span class="pl-c1">true</span><span class="pl-kos">,</span>                                                              
+  <span class="pl-s">"dependencies"</span>: <span class="pl-kos">{</span>...<span class="pl-kos">}</span><span class="pl-kos">,</span> 
+  <span class="pl-s">"devDependencies"</span>: <span class="pl-kos">{</span>...<span class="pl-kos">}</span><span class="pl-kos">,</span>
+  <span class="pl-s">"scripts"</span>: <span class="pl-kos">{</span>
+    <span class="pl-s">"start"</span>: <span class="pl-s">"react-scripts start"</span><span class="pl-kos">,</span>
+    <span class="pl-s">"build"</span>: <span class="pl-s">"react-scripts build"</span><span class="pl-kos">,</span>
+    <span class="pl-s">"test"</span>: <span class="pl-s">"react-scripts test"</span><span class="pl-kos">,</span>
+    <span class="pl-s">"eject"</span>: <span class="pl-s">"react-scripts eject"</span>
+  <span class="pl-kos">}</span><span class="pl-kos">,</span>
+  <span class="pl-s">"eslintConfig"</span>: <span class="pl-kos">{</span>
+    <span class="pl-s">"extends"</span>: <span class="pl-s">"react-app"</span>
+  <span class="pl-kos">}</span><span class="pl-kos">,</span>
+  <span class="pl-s">"browserslist"</span>: <span class="pl-kos">[</span>...<span class="pl-kos">]</span>
+<span class="pl-kos">}</span></pre></div>
+<p>In this JSON you can delete the following fields:</p>
+<ul>
+<li>private</li>
+<li>scripts</li>
+<li>eslintConfig</li>
+<li>browserslist</li>
+</ul>
+<p>We are using <strong>React v16.X</strong>, check that your dependencies are correct !</p>
+<div class="highlight highlight-source-js"><pre><span class="pl-kos">{</span>
+  <span class="pl-s">"name"</span>: <span class="pl-s">"web"</span><span class="pl-kos">,</span>
+  <span class="pl-s">"version"</span>: <span class="pl-s">"0.1.0"</span><span class="pl-kos">,</span>
+  <span class="pl-s">"dependencies"</span>: <span class="pl-kos">{</span>
+    <span class="pl-s">"react"</span>: <span class="pl-s">"^16.12.0"</span><span class="pl-kos">,</span>
+    <span class="pl-s">"react-dom"</span>: <span class="pl-s">"^16.12.0"</span>
+  <span class="pl-kos">}</span>
+<span class="pl-kos">}</span></pre></div>
+<h2 id="user-content-step-1---the-read-horse-webpack"><a class="heading-link" href="#step-1---the-read-horse-webpack">Step 1 - The Read Horse: Webpack<span aria-hidden="true" class="octicon octicon-link"></span></a></h2>
+<p><a href="https://webpack.js.org/concepts" rel="nofollow">Webpack</a> is a resource manager.<br>
+It will help us process our resources (<code>.js</code>, <code>.png</code>, <code>.html</code>, <code>.css</code>) and bundle them into a static application.<br>
+It also provides a simple way to create plugins that will transform and handle these various resources.</p>
+<p><strong>READ the documentation at <a href="https://webpack.js.org/concepts" rel="nofollow">https://webpack.js.org/concepts</a></strong>.</p>
+<h3 id="user-content-installation"><a class="heading-link" href="#installation">Installation<span aria-hidden="true" class="octicon octicon-link"></span></a></h3>
+<p>You can install <code>webpack</code> as a dependency in your NPM project.</p>
+<div class="highlight highlight-source-shell"><pre>  $<span class="pl-k">&gt;</span> npm install --save-dev webpack@^5.1.3 webpack-cli</pre></div>
+<p>Now we need to start customizing the webpack configuration. Everything is documented here if you want : <a href="https://webpack.js.org/configuration/" rel="nofollow">https://webpack.js.org/configuration/</a>.</p>
+<p>If you launch webpack with its default configuration :</p>
+<div class="highlight highlight-source-shell"><pre>  $<span class="pl-k">&gt;</span> node node_modules/webpack/bin/webpack.js</pre></div>
+<p>You'll see that, by default, webpack is expecting an entry point in the <code>web/src/</code> folder.</p>
+<p>You can create a <code>webpack.config.js</code> like this to begin with :</p>
+<div class="highlight highlight-source-js"><pre><span class="pl-smi">module</span><span class="pl-kos">.</span><span class="pl-c1">exports</span> <span class="pl-c1">=</span> <span class="pl-kos">{</span>
+  <span class="pl-c1">entry</span>: <span class="pl-s">'./script.js'</span><span class="pl-kos">,</span>
+  <span class="pl-c1">mode</span>: <span class="pl-s">'development'</span><span class="pl-kos">,</span>
+  <span class="pl-c1">devtool</span>: <span class="pl-s">'inline-source-map'</span><span class="pl-kos">,</span>
+  <span class="pl-c1">output</span>: <span class="pl-kos">{</span> <span class="pl-c1">filename</span>: <span class="pl-s">'bundle.js'</span> <span class="pl-kos">}</span><span class="pl-kos">,</span>
+  <span class="pl-c1">plugins</span>: <span class="pl-kos">[</span><span class="pl-kos">]</span><span class="pl-kos">,</span>
+  <span class="pl-c1">module</span>: <span class="pl-kos">{</span><span class="pl-kos">}</span><span class="pl-kos">,</span>
+<span class="pl-kos">}</span></pre></div>
+<ul>
+<li>
+<code>entry</code> is the entry point of our web application. Webpack will parse this file and start its dependency graph based on its content.</li>
+<li>
+<code>output</code> tells webpack where to emit the bundles it creates and how to name these files. It will wrap together all the <code>js</code> inside it.</li>
+</ul>
+<p>Let's execute Webpack with our <code>script.js</code> file, containing our <code>React</code> application (with <code>React.createElement</code>, no <code>JSX</code> for now).</p>
+<p>You should now see a file named <code>bundle.js</code> inside your directory. Open it and try to find your code inside it :)</p>
+<h3 id="user-content-javascript-is-dead-long-live-javascript-"><a class="heading-link" href="#javascript-is-dead-long-live-javascript-">Javascript is dead, long live Javascript !<span aria-hidden="true" class="octicon octicon-link"></span></a></h3>
+<p>Until now we only used <strong>Vanilla Javascript</strong>.<br>
+The function you defined must likely look like this:</p>
+<div class="highlight highlight-source-js"><pre>  <span class="pl-k">function</span> <span class="pl-en">test</span><span class="pl-kos">(</span><span class="pl-kos">)</span> <span class="pl-kos">{</span>
+    <span class="pl-smi">console</span><span class="pl-kos">.</span><span class="pl-en">log</span><span class="pl-kos">(</span><span class="pl-s">"Hello!"</span><span class="pl-kos">)</span>
+  <span class="pl-kos">}</span></pre></div>
+<p>And you maybe ended up at first creating one looking like this:</p>
+<div class="highlight highlight-source-js"><pre>  <span class="pl-k">var</span> <span class="pl-en">test</span> <span class="pl-c1">=</span> <span class="pl-kos">(</span><span class="pl-kos">)</span><span class="pl-c1">=&gt;</span><span class="pl-kos">{</span>
+    <span class="pl-smi">console</span><span class="pl-kos">.</span><span class="pl-en">log</span><span class="pl-kos">(</span><span class="pl-s">"Hello!"</span><span class="pl-kos">)</span>
+  <span class="pl-kos">}</span></pre></div>
+<p>But it didn't work.<br>
+<strong>Why ?</strong> This feature of the language is not yet supported by all browser. It is part of <a href="https://babeljs.io/docs/en/learn/" rel="nofollow"><strong>ECMAScript 2015 features</strong></a>.</p>
+<h3 id="user-content-as-empire-division"><a class="heading-link" href="#as-empire-division">As Empire division<span aria-hidden="true" class="octicon octicon-link"></span></a></h3>
+<p>To be able to use the previous code, we will <strong>transform</strong> it into vanilla Javascript.<br>
+We're going to <a href="https://en.wikipedia.org/wiki/Source-to-source_compiler" rel="nofollow"><strong>transpile</strong></a> our code.</p>
+<p>To do so, we will use a feature of webpack called <strong>Loaders</strong>.</p>
+<p>Taken from the <a href="https://webpack.js.org/concepts#loaders" rel="nofollow">documentation</a> of Webpack (<strong>go read it</strong>):</p>
+<pre><code>Out of the box, webpack only understands JavaScript and JSON files.  
+Loaders allow webpack to process other types of files and convert them into valid  
+modules that can be consumed by your application and added to the dependency graph.
+</code></pre>
+<p>The transpiler we will use is called <a href="https://babeljs.io/" rel="nofollow"><strong>Babel</strong></a>.</p>
+<p>Let's install it into our project, as well as the <strong>ECMAScript 2015</strong> plugin.</p>
+<div class="highlight highlight-source-shell"><pre>  $<span class="pl-k">&gt;</span> npm install --save-dev @babel/core@^7.12.1
+  $<span class="pl-k">&gt;</span> npm install --save-dev babel-loader@^8.1
+  $<span class="pl-k">&gt;</span> npm install --save-dev @babel/preset-env@^7.12.1</pre></div>
+<p>Now that we have <strong>Babel</strong> and its plugins installed, we need to tell <strong>Webpack</strong> to use it on all our <code>.js</code> files.<br>
+Here is our new <code>webpack.config.js</code>:</p>
+<div class="highlight highlight-source-js"><pre><span class="pl-smi">module</span><span class="pl-kos">.</span><span class="pl-c1">exports</span> <span class="pl-c1">=</span> <span class="pl-kos">{</span>
+  <span class="pl-c1">entry</span>: <span class="pl-s">'./script.js'</span><span class="pl-kos">,</span>
+  <span class="pl-c1">mode</span>: <span class="pl-s">'development'</span><span class="pl-kos">,</span>
+  <span class="pl-c1">devtool</span>: <span class="pl-s">'inline-source-map'</span><span class="pl-kos">,</span>
+  <span class="pl-c1">output</span>: <span class="pl-kos">{</span> <span class="pl-c1">filename</span>: <span class="pl-s">'bundle.js'</span> <span class="pl-kos">}</span><span class="pl-kos">,</span>
+  <span class="pl-c1">plugins</span>: <span class="pl-kos">[</span><span class="pl-kos">]</span><span class="pl-kos">,</span>
+  <span class="pl-c1">module</span>: <span class="pl-kos">{</span>
+    <span class="pl-c1">rules</span>: <span class="pl-kos">[</span>
+      <span class="pl-kos">{</span>
+        <span class="pl-c1">test</span>: <span class="pl-pds"><span class="pl-c1">/</span>.js?<span class="pl-cce">$</span><span class="pl-c1">/</span></span><span class="pl-kos">,</span>
+        <span class="pl-c1">use</span>: <span class="pl-kos">{</span>
+          <span class="pl-c1">loader</span>: <span class="pl-s">'babel-loader'</span><span class="pl-kos">,</span>
+          <span class="pl-c1">options</span>: <span class="pl-kos">{</span>
+            <span class="pl-c1">presets</span>: <span class="pl-kos">[</span>
+              <span class="pl-kos">[</span><span class="pl-s">"@babel/preset-env"</span><span class="pl-kos">,</span> <span class="pl-kos">{</span> <span class="pl-s">"targets"</span>: <span class="pl-s">"defaults"</span> <span class="pl-kos">}</span><span class="pl-kos">]</span>
+            <span class="pl-kos">]</span>
+          <span class="pl-kos">}</span>
+        <span class="pl-kos">}</span><span class="pl-kos">,</span>
+        <span class="pl-c1">exclude</span>: <span class="pl-pds"><span class="pl-c1">/</span>node_modules<span class="pl-c1">/</span></span>
+      <span class="pl-kos">}</span>
+    <span class="pl-kos">]</span>
+  <span class="pl-kos">}</span><span class="pl-kos">,</span>
+<span class="pl-kos">}</span></pre></div>
+<p>Now, replace the declaration of your <code>function</code> inside your <code>script.js</code> file to use the modern declaration <code>() =&gt; {}</code>.<br>
+Bundle your application using <strong>Webpack</strong> and take a look in the <code>bundle.js</code> file to see the transpiled code.</p>
+<div class="highlight highlight-source-js"><pre><span class="pl-c">//This</span>
+  <span class="pl-k">var</span> <span class="pl-en">test</span> <span class="pl-c1">=</span> <span class="pl-kos">(</span><span class="pl-kos">)</span> <span class="pl-c1">=&gt;</span> <span class="pl-kos">{</span><span class="pl-kos">}</span>
+
+<span class="pl-c">//Became this</span>
+  <span class="pl-en">test</span> <span class="pl-c1">=</span> <span class="pl-k">function</span> <span class="pl-en">test</span><span class="pl-kos">(</span><span class="pl-kos">)</span> <span class="pl-kos">{</span><span class="pl-kos">}</span><span class="pl-kos">;</span></pre></div>
+<p><strong>Here, <code>'es2015'</code> is a plugin of Babel.</strong></p>
+<h3 id="user-content-jsx"><a class="heading-link" href="#jsx">JSX<span aria-hidden="true" class="octicon octicon-link"></span></a></h3>
+<p>Install the <code>react</code> babel's plugin and the <code>jsx</code> dependency.</p>
+<div class="highlight highlight-source-shell"><pre>  $<span class="pl-k">&gt;</span> npm install --save-dev @babel/preset-react@^7.12.1
+  $<span class="pl-k">&gt;</span> npm install --save-dev jsx</pre></div>
+<p>We also need to tell Webpack to use it: add the <code>'react'</code> preset next to the <code>'preset-env'</code> one :</p>
+<div class="highlight highlight-source-js"><pre>...
+          <span class="pl-s1">use</span>: <span class="pl-kos">{</span>
+            <span class="pl-c1">loader</span>: <span class="pl-s">'babel-loader'</span><span class="pl-kos">,</span>
+            <span class="pl-c1">options</span>: <span class="pl-kos">{</span>
+              <span class="pl-c1">presets</span>: <span class="pl-kos">[</span>
+                <span class="pl-kos">[</span><span class="pl-s">"@babel/preset-env"</span><span class="pl-kos">,</span> <span class="pl-kos">{</span> <span class="pl-s">"targets"</span>: <span class="pl-s">"defaults"</span> <span class="pl-kos">}</span><span class="pl-kos">]</span><span class="pl-kos">,</span>
+                <span class="pl-s">"@babel/preset-react"</span>
+              <span class="pl-kos">]</span>
+            <span class="pl-kos">}</span>
+          <span class="pl-kos">}</span>
+<span class="pl-kos">.</span><span class="pl-kos">.</span><span class="pl-kos">.</span></pre></div>
+<p>Remove all occurences of the <code>React.createElement</code> function, and use <a href="https://reactjs.org/docs/introducing-jsx.html" rel="nofollow">JSX</a> instead.</p>
+<p>Bundle it using Webpack, Babel will transpile your JSX code into vanilla js.</p>
+<p><strong>We're all set ! You should be able to use JSX code inside your web application. Go and take a look at your <code>bundle.js</code> file</strong></p>
+<h3 id="user-content-debugging"><a class="heading-link" href="#debugging">Debugging<span aria-hidden="true" class="octicon octicon-link"></span></a></h3>
+<p>To help debugging, you can use the <a href="https://webpack.js.org/configuration/devtool/" rel="nofollow">dev-tool</a> option of Webpack.</p>
+<h2 id="user-content-step-2---the-black-horse-babel"><a class="heading-link" href="#step-2---the-black-horse-babel">Step 2 - The Black Horse: Babel<span aria-hidden="true" class="octicon octicon-link"></span></a></h2>
+<p><strong>[UPDATE 02/12/2021] - THIS STEP 2 NEEDS REWRITING AND IS NOT MANDATORY. DO IT ONLY IF YOU FEEL VERY COMFORTABLE WITH THE PREVIOUS CHAPTERS AND STEPS. IF NOT, JUMP TO STEP 3</strong></p>
+<p>Babel is a <code>source-to-source compiler</code>.<br>
+It parses the source code of your project into an <a href="https://en.wikipedia.org/wiki/Abstract_syntax_tree" rel="nofollow">AST</a>, allows plugins to transform it, and generates new code based on the modified version of this <a href="https://en.wikipedia.org/wiki/Abstract_syntax_tree" rel="nofollow">AST</a>.</p>
+<p><a target="_blank" rel="noopener noreferrer" href="../img/transpilation.png"><img src="../img/transpilation.png" alt="transpilation" style="max-width: 100%;"></a>
+<em>Source: <a href="https://medium.com/@marianococirio/build-your-own-babel-plugin-from-scratch-8db0162f983a" rel="nofollow">medium</a></em></p>
+<h3 id="user-content-my-custom-babel-plugin"><a class="heading-link" href="#my-custom-babel-plugin">My Custom Babel plugin<span aria-hidden="true" class="octicon octicon-link"></span></a></h3>
+<p>To really understand how <strong>Babel</strong> works, we're going to create a little plugin.</p>
+<div class="highlight highlight-source-js"><pre><span class="pl-c">//The aim is to transpile a source code like this:</span>
+  <span class="pl-c1">&lt;</span><span class="pl-ent">Declaration</span> <span class="pl-c1">var</span><span class="pl-c1">=</span><span class="pl-s">"test"</span> <span class="pl-c1">value</span><span class="pl-c1">=</span><span class="pl-kos">{</span><span class="pl-c1">42</span><span class="pl-kos">}</span><span class="pl-c1">/</span><span class="pl-c1">&gt;</span>
+  <span class="pl-c1">&lt;</span><span class="pl-v">Declaration</span> <span class="pl-s1">var</span><span class="pl-c1">=</span><span class="pl-s">"kbrw"</span> <span class="pl-s1">value</span><span class="pl-c1">=</span><span class="pl-s">"the best"</span><span class="pl-c1">/</span><span class="pl-s1"></span><span class="pl-c1">&gt;</span>
+
+<span class="pl-c">//Into</span>
+  <span class="pl-s1">var</span> <span class="pl-s1">test</span> <span class="pl-c1">=</span> <span class="pl-c1">42</span>
+  <span class="pl-k">var</span> <span class="pl-s1">kbrw</span> <span class="pl-c1">=</span> <span class="pl-s">"the best"</span></pre></div>
+<p><strong>Read the <a href="https://github.com/jamiebuilds/babel-handbook/blob/master/translations/en/plugin-handbook.md">Babel Plugin Handbook</a></strong></p>
+<h4 id="user-content-our-babel-project"><a class="heading-link" href="#our-babel-project">Our Babel project<span aria-hidden="true" class="octicon octicon-link"></span></a></h4>
+<p>Create a new NPM project.</p>
+<p>We will need some few dependencies, JSX is one of them.<br>
+Indeed, <code>&lt;Declaration/&gt;</code> is not regular JS, this is JSX and we must tell Babel that our plugin is going to use it.</p>
+<p>Our <code>package.json</code> should contains something like this:</p>
+<div class="highlight highlight-source-js"><pre>  <span class="pl-s">"dependencies"</span>: <span class="pl-kos">{</span>
+    <span class="pl-s">"@babel/types"</span>: <span class="pl-s">"^6.20.0"</span><span class="pl-kos">,</span>
+    <span class="pl-s">"@babel/plugin-syntax-jsx"</span>: <span class="pl-s">"^6.18.0"</span>
+  <span class="pl-kos">}</span><span class="pl-kos">,</span>
+  <span class="pl-s">"devDependencies"</span>: <span class="pl-kos">{</span>
+    <span class="pl-s">"@babel/core"</span>: <span class="pl-s">"^7.12.1"</span>
+  <span class="pl-kos">}</span></pre></div>
+<p>Now, having read the <a href="https://github.com/jamiebuilds/babel-handbook/blob/master/translations/en/plugin-handbook.md">Babel Plugin Handbook</a>, you should be able to create a plugin that replaces a given <a href="https://babeljs.io/docs/en/babel-types#jsxelement" rel="nofollow">JSXElement</a> by what you need.<br>
+<em>The documentation of babel-types might help you <a href="https://babeljs.io/docs/en/babel-types" rel="nofollow">here</a></em></p>
+<p><strong>Useful tips:</strong></p>
+<ul>
+<li>Go and take a look at our homemade preset, called <a href="https://github.com/kbrw/babel-plugin-transform-jsxz/"><strong>JSXZ</strong></a>
+</li>
+<li>Look into your <code>bundle.js</code> file to see your transpiled code</li>
+<li>You can easily see the AST of Babel given some JS code on this website: <a href="https://astexplorer.net/" rel="nofollow">https://astexplorer.net/</a>, <strong>USE IT</strong>.</li>
+<li>What is the difference in the AST between this two declarations</li>
+</ul>
+<div class="highlight highlight-source-js"><pre>  <span class="pl-c1">&lt;</span><span class="pl-ent">Declaration</span> <span class="pl-c1">var</span><span class="pl-c1">=</span><span class="pl-s">"test"</span> <span class="pl-c1">value</span><span class="pl-c1">=</span><span class="pl-s">"42"</span><span class="pl-c1">/</span><span class="pl-c1">&gt;</span>
+  <span class="pl-c1">&lt;</span><span class="pl-v">Declaration</span> <span class="pl-s1">var</span><span class="pl-c1">=</span><span class="pl-s">"test"</span> <span class="pl-s1">value</span><span class="pl-c1">=</span><span class="pl-kos">{</span><span class="pl-c1">42</span><span class="pl-kos">}</span><span class="pl-c1">/</span><span class="pl-c1">&gt;</span></pre></div>
+<p>I should be able to call you plugin in webpack like this:</p>
+<div class="highlight highlight-source-js"><pre>    <span class="pl-smi">module</span>: <span class="pl-kos">{</span>
+      <span class="pl-c1">rules</span>: <span class="pl-kos">[</span>
+        <span class="pl-kos">{</span>
+          <span class="pl-c1">test</span>: <span class="pl-pds"><span class="pl-c1">/</span>.js?<span class="pl-cce">$</span><span class="pl-c1">/</span></span><span class="pl-kos">,</span>
+          <span class="pl-c1">use</span>: <span class="pl-kos">{</span>
+            <span class="pl-c1">loader</span>: <span class="pl-s">'babel-loader'</span><span class="pl-kos">,</span>
+            <span class="pl-c1">options</span>: <span class="pl-kos">{</span>
+              <span class="pl-c1">presets</span>: <span class="pl-kos">[</span>
+                <span class="pl-kos">[</span><span class="pl-s">"@babel/preset-env"</span><span class="pl-kos">,</span> <span class="pl-kos">{</span> <span class="pl-s">"targets"</span>: <span class="pl-s">"defaults"</span> <span class="pl-kos">}</span><span class="pl-kos">]</span><span class="pl-kos">,</span>
+                <span class="pl-s">"@babel/preset-react"</span>
+              <span class="pl-kos">]</span><span class="pl-kos">,</span>
+              <span class="pl-c1">plugins</span>: <span class="pl-kos">[</span><span class="pl-s">'my-babel-plugin'</span><span class="pl-kos">]</span>
+            <span class="pl-kos">}</span>
+          <span class="pl-kos">}</span>
+          <span class="pl-s1">exclude</span>: <span class="pl-c1">/</span><span class="pl-s1">node_modules</span><span class="pl-c1">/</span>
+        <span class="pl-kos">}</span>
+      <span class="pl-kos">]</span>
+    <span class="pl-kos">}</span><span class="pl-kos">,</span></pre></div>
+<h2 id="user-content-step-3---the-pale-horse-jsxz"><a class="heading-link" href="#step-3---the-pale-horse-jsxz">Step 3 - The Pale Horse: JSXZ<span aria-hidden="true" class="octicon octicon-link"></span></a></h2>
+<p>You should now have a better understanding on how the presets <code>es2015</code> and <code>react</code> work.</p>
+<p>All our web applications use <strong>React</strong>, as well as a homemade Babel plugin named <strong>JSXZ</strong>.<br>
+<em><strong>Go and take a look at JSXZ here: <a href="https://github.com/kbrw/babel-preset-jsxz">https://github.com/kbrw/babel-preset-jsxz</a></strong></em></p>
+<p><strong>JSXZ</strong> is using what we call <strong>CSS selectors</strong>. This means that when rendering our web page, we will be able to target specific <strong>HTML elements</strong> using their <strong>CSS classes</strong> to alter them and inject custom values in them, or change their attributes.<br>
+This is going to help us separate the <strong>design</strong> of our pages from their <strong>integration</strong>.</p>
+<h3 id="user-content-dependencies-1"><a class="heading-link" href="#dependencies-1">Dependencies<span aria-hidden="true" class="octicon octicon-link"></span></a></h3>
+<p>Let's add some new dependencies to our web project:</p>
+<div class="highlight highlight-source-shell"><pre>  $<span class="pl-k">&gt;</span> npm install --save-dev @kbrw/babel-preset-jsxz@~1.0.2
+  $<span class="pl-k">&gt;</span> npm install --save-dev create-react-class@^15</pre></div>
+<h3 id="user-content-sample-project"><a class="heading-link" href="#sample-project">Sample project<span aria-hidden="true" class="octicon octicon-link"></span></a></h3>
+<p>We now add <code>jsxz</code> in Webpack.<br>
+It takes as parameter a directory inside which it's going to look for the template files.
+Here it will be <code>webflow</code>.</p>
+<div class="highlight highlight-source-js"><pre>              <span class="pl-s1">presets</span>: <span class="pl-kos">[</span>
+                <span class="pl-kos">[</span><span class="pl-s">"@babel/preset-env"</span><span class="pl-kos">,</span> <span class="pl-kos">{</span> <span class="pl-s">"targets"</span>: <span class="pl-s">"defaults"</span> <span class="pl-kos">}</span><span class="pl-kos">]</span><span class="pl-kos">,</span>
+                <span class="pl-s">"@babel/preset-react"</span><span class="pl-kos">,</span>
+                <span class="pl-kos">[</span><span class="pl-s">"@kbrw/jsxz"</span><span class="pl-kos">,</span> <span class="pl-kos">{</span> <span class="pl-c1">dir</span>: <span class="pl-s">'webflow'</span> <span class="pl-kos">}</span><span class="pl-kos">]</span>
+              <span class="pl-kos">]</span><span class="pl-kos">,</span></pre></div>
+<p>Let's create a <code>webflow</code> directory and a file <code>template.html</code> inside this directory.</p>
+<div class="highlight highlight-text-html-basic"><pre><span class="pl-kos">&lt;</span><span class="pl-ent">div</span> <span class="pl-c1">class</span>="<span class="pl-s">container</span>"<span class="pl-kos">&gt;</span>
+    <span class="pl-kos">&lt;</span><span class="pl-ent">p</span> <span class="pl-c1">class</span>="<span class="pl-s">item</span>"<span class="pl-kos">&gt;</span>This is an item<span class="pl-kos">&lt;/</span><span class="pl-ent">p</span><span class="pl-kos">&gt;</span>
+    <span class="pl-kos">&lt;</span><span class="pl-ent">p</span> <span class="pl-c1">class</span>="<span class="pl-s">price</span>"<span class="pl-kos">&gt;</span>This is a price<span class="pl-kos">&lt;/</span><span class="pl-ent">p</span><span class="pl-kos">&gt;</span>
+<span class="pl-kos">&lt;/</span><span class="pl-ent">div</span><span class="pl-kos">&gt;</span></pre></div>
+<p>Now, let's render this page inside our <code>script.js</code>, replacing the content of the two <code>&lt;p&gt;</code>.</p>
+<div class="highlight highlight-source-js"><pre>  <span class="pl-k">var</span> <span class="pl-s1">createReactClass</span> <span class="pl-c1">=</span> <span class="pl-en">require</span><span class="pl-kos">(</span><span class="pl-s">'create-react-class'</span><span class="pl-kos">)</span>
+
+  <span class="pl-k">var</span> <span class="pl-v">Page</span> <span class="pl-c1">=</span> <span class="pl-s1">createReactClass</span><span class="pl-kos">(</span><span class="pl-kos">{</span>
+    <span class="pl-en">render</span><span class="pl-kos">(</span><span class="pl-kos">)</span><span class="pl-kos">{</span>
+      <span class="pl-k">return</span> <span class="pl-c1">&lt;</span><span class="pl-ent">JSXZ</span> <span class="pl-c1">in</span><span class="pl-c1">=</span><span class="pl-s">"template"</span> <span class="pl-c1">sel</span><span class="pl-c1">=</span><span class="pl-s">".container"</span><span class="pl-c1">&gt;</span>
+        <span class="pl-c1">&lt;</span><span class="pl-ent">Z</span> <span class="pl-c1">sel</span><span class="pl-c1">=</span><span class="pl-s">".item"</span><span class="pl-c1">&gt;</span>Burgers<span class="pl-c1">&lt;</span><span class="pl-c1">/</span><span class="pl-ent">Z</span><span class="pl-c1">&gt;</span>,
+        <span class="pl-c1">&lt;</span><span class="pl-ent">Z</span> <span class="pl-c1">sel</span><span class="pl-c1">=</span><span class="pl-s">".price"</span><span class="pl-c1">&gt;</span>50<span class="pl-c1">&lt;</span><span class="pl-c1">/</span><span class="pl-ent">Z</span><span class="pl-c1">&gt;</span>
+      <span class="pl-c1">&lt;</span><span class="pl-c1">/</span><span class="pl-ent">JSXZ</span><span class="pl-c1">&gt;</span>
+    <span class="pl-kos">}</span>
+  <span class="pl-kos">}</span><span class="pl-kos">)</span>
+
+  <span class="pl-v">ReactDOM</span><span class="pl-kos">.</span><span class="pl-en">render</span><span class="pl-kos">(</span>
+    <span class="pl-c1">&lt;</span><span class="pl-v">Page</span><span class="pl-c1">/</span><span class="pl-c1">&gt;</span><span class="pl-kos">,</span>
+    <span class="pl-smi">document</span><span class="pl-kos">.</span><span class="pl-en">getElementById</span><span class="pl-kos">(</span><span class="pl-s">'root'</span><span class="pl-kos">)</span>
+  <span class="pl-kos">)</span></pre></div>
+<p>Run Webpack and open your index.html file.<br>
+You should see that the content of both <code>p</code> have been replaced by <code>Burgers</code> and <code>50</code>.</p>
+<p><strong>NOTE: the JSXZ "sel=" attribute can take any kind of selector but always use the <code>.</code> (class) selector inside KBRW projects.</strong><br>
+<em>If you have some js errors, remember that the script file you need to use is now bundle.js</em></p>
+<hr>
+<h2 id="user-content-question-time-"><a class="heading-link" href="#question-time-">Question time !<span aria-hidden="true" class="octicon octicon-link"></span></a></h2>
+<ul>
+<li>Define <em>transpiling</em>
+</li>
+<li>Why use <strong>Babel</strong> ?</li>
+<li>Why use <strong>Webpack</strong> ?</li>
+<li>Can we use Babel <strong>without</strong> Webpack ?</li>
+</ul>
+<hr>
+<p><a href="chap2.html">Prev chapter</a> <strong>Chapter 3</strong> <a href="chap4.html">Next chapter</a></p>
+
+</body>
+</html>
+</article>
