@@ -8,7 +8,7 @@ defmodule DbSupervisor do
   @impl true
   def init(_init_arg) do
     children = [
-      {Database, [name: :default]}
+      {Database, [name: :db_default]}
     ]
     Supervisor.init(children, strategy: :one_for_one)
   end

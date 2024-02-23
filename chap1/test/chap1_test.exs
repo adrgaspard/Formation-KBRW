@@ -1,13 +1,13 @@
-defmodule Part5Test do
+defmodule Chap1Test do
   use ExUnit.Case
-  doctest Part5
+  doctest Chap1
 
   test "reject bad requests" do
-    assert GenServer.call(Database, "useless because of bad_request") == :bad_request
+    assert GenServer.call(:db_default, "useless because of bad_request") == :bad_request
   end
 
   test "reject bad method" do
-    assert GenServer.call(Database, {:wrong_method, "useless because of bad_method"}) == :bad_method
+    assert GenServer.call(:db_default, {:wrong_method, "useless because of bad_method"}) == :bad_method
   end
 
   test "key not found" do

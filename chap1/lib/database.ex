@@ -33,15 +33,15 @@ defmodule Database do
   #   :ets.delete(:database_ets)
   # end
 
-  def get(database \\ :default, key) when is_atom(database) when not is_list(key) do GenServer.call(database, {:get, key}) end
+  def get(database \\ :db_default, key) when is_atom(database) when not is_list(key) do GenServer.call(database, {:get, key}) end
 
-  def post(database \\ :default, key, value) when is_atom(database) do GenServer.call(database, {:post, {key, value}}) end
+  def post(database \\ :db_default, key, value) when is_atom(database) do GenServer.call(database, {:post, {key, value}}) end
 
-  def put(database \\ :default, key, value) when is_atom(database)  do GenServer.call(database, {:put, {key, value}}) end
+  def put(database \\ :db_default, key, value) when is_atom(database)  do GenServer.call(database, {:put, {key, value}}) end
 
-  def delete(database \\ :default, key) when is_atom(database) do GenServer.call(database, {:delete, key}) end
+  def delete(database \\ :db_default, key) when is_atom(database) do GenServer.call(database, {:delete, key}) end
 
-  def search(database \\ :default, criterias) when is_atom(database) when is_list(criterias) do GenServer.call(database, {:get, criterias}) end
+  def search(database \\ :db_default, criterias) when is_atom(database) when is_list(criterias) do GenServer.call(database, {:get, criterias}) end
 
   defp execute_method(database, {:get, key}) when not is_list(key) do
     case :ets.lookup(database, key) do

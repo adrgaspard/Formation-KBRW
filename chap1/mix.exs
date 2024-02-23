@@ -1,9 +1,9 @@
-defmodule Part5.MixProject do
+defmodule Chap1.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :part6,
+      app: :chap1,
       version: "0.1.0",
       elixir: "~> 1.11",
       start_permanent: Mix.env() == :prod,
@@ -14,7 +14,7 @@ defmodule Part5.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      mod: {Part6, []},
+      mod: {Chap1, []},
       extra_applications: [:logger]
     ]
   end
