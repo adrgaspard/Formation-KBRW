@@ -4,12 +4,15 @@ defmodule Chap2 do
 
   def start(_type, _args) do
     children = [
-      {Plug.Cowboy, scheme: :http, plug: TheFirstPlug, options: [port: 4001]}
+      {Database, [name: :db_default]},
+      {Plug.Cowboy, scheme: :http, plug: RestRouter, options: [port: 4002]}
     ]
     opts = [strategy: :one_for_one, name: Chap2.Supervisor]
-    Supervisor.start_link(children, opts)
-    Logger.info("Plug now running on localhost:4001")
-    Process.sleep :infinity
+    pid = Supervisor.start_link(children, opts)
+    Logger.info("Plug now running on localhost:4002")
+    0..1
+    |> Enum.map(fn num -> "../_instructions/Resources/chap1/orders_dump/orders_chunk#{num}.json" end)
+    |> Enum.each(fn file -> JsonLoader.load_to_database :db_default, file end)
+    pid
   end
-
 end
