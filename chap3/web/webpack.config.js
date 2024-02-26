@@ -13,8 +13,9 @@ module.exports = {
           options: {
             presets: [
               ["@babel/preset-env", { targets: "defaults" }],
-              "@babel/preset-react"
+              "@babel/preset-react",
             ],
+            plugins: ["../my-custom-babel"],
           },
         },
         exclude: /node_modules/,
