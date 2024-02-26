@@ -10,3 +10,8 @@ erl_crash.dump
 .elixir_ls/
 .vscode/
 asdf/
+**/node_modules/
+**/dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
