@@ -12,7 +12,6 @@ module.exports = function ({ types: t }) {
           });
           if (varNameAttribute && varNameAttribute) {
             const varName = varNameAttribute.value.value;
-            //console.log(varValueAttribute.value);
             const varValue = varValueAttribute.value.expression ? varValueAttribute.value.expression.value : varValueAttribute.value.value;
             const declaration = t.variableDeclaration("var", [
               t.variableDeclarator(t.identifier(varName), t.valueToNode(varValue))
