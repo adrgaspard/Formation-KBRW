@@ -12,6 +12,7 @@ erl_crash.dump
 asdf/
 **/node_modules/
 **/dist/
+**/priv/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

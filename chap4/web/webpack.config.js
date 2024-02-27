@@ -1,9 +1,29 @@
+const path = require("path");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
+
 module.exports = {
-  entry: "./script.js",
+  entry: "./app.js",
   mode: "development",
   devtool: "inline-source-map",
-  output: { filename: "bundle.js" },
-  plugins: [],
+  output: {
+    path: path.join(__dirname, "../priv/static"),
+    filename: "[name].js",
+  },
+  optimization: {
+    splitChunks: {
+      cacheGroups: {
+        styles: {
+          name: "styles",
+          test: /\.css$/,
+          chunks: "all",
+          enforce: true,
+        },
+      },
+    },
+    minimizer: [`...`, new CssMinimizerPlugin()],
+  },
+  plugins: [new MiniCssExtractPlugin({ insert: "", filename: "[name].css" })],
   module: {
     rules: [
       {
@@ -14,12 +34,19 @@ module.exports = {
             presets: [
               ["@babel/preset-env", { targets: "defaults" }],
               "@babel/preset-react",
-              ["@kbrw/jsxz", { dir: 'webflow' }]
+              ["@kbrw/jsxz", { dir: "webflow" }],
             ],
-            plugins: ["../my-custom-babel"],
+            plugins: [],
           },
         },
         exclude: /node_modules/,
+      },
+      {
+        test: /\.(css)$/,
+        use: [
+          { loader: MiniCssExtractPlugin.loader },
+          { loader: "css-loader" },
+        ],
       },
     ],
   },
