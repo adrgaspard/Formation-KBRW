@@ -46,22 +46,22 @@ const Orders = [
 
 const Page = createReactClass({
   render() {
-    return Orders.map(order => (
-      <JSXZ in="orders" sel=".orderlinebody">
-        <Z sel=".command-number > .text-block">{order.remoteid}</Z>
-        <Z sel=".customer > .text-block">{order.custom.customer.full_name}</Z>
-        <Z sel=".address > .text-block">{order.custom.billing_address}</Z>
-        <Z sel=".quantity > .text-block">{order.items}</Z>
-      </JSXZ>
-    ));
+    return (<JSXZ in="orders" sel=".container">
+      <Z sel=".orders-table-body">
+        {Orders.map((order) => (
+          <JSXZ in="orders" sel=".orderlinebody">
+            <Z sel=".command-number > .text-block">{order.remoteid}</Z>
+            <Z sel=".customer > .text-block">
+              {order.custom.customer.full_name}
+            </Z>
+            <Z sel=".address > .text-block">{order.custom.billing_address}</Z>
+            <Z sel=".quantity > .text-block">{order.items}</Z>
+          </JSXZ>
+        ))}
+      </Z>
+    </JSXZ>);
   },
 });
-
-// const Page = createReactClass({
-//   render() {
-//     return <JSXZ in="orders" sel=".container"></JSXZ>;
-//   }
-// })
 
 const domNode = document.getElementById("root");
 console.log(domNode);
