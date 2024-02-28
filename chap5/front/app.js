@@ -8,6 +8,41 @@ require("!!file-loader?name=[name].[ext]!./index.html");
 require("./webflow/css/order.css");
 require("./webflow/css/orders.css");
 
+const OrdersData = [
+  {remoteid
+    : "000000189",
+    custom: {
+      customer: { full_name: "TOTO & CIE" },
+      billing_address: "Some where in the world",
+    },
+    items: 2,
+  },
+  {
+    remoteid: "000000190",
+    custom: {
+      customer: { full_name: "Looney Toons" },
+      billing_address: "The Warner Bros Company",
+    },
+    items: 3,
+  },
+  {
+    remoteid: "000000191",
+    custom: {
+      customer: { full_name: "Asterix & Obelix" },
+      billing_address: "Armorique",
+    },
+    items: 29,
+  },
+  {
+    remoteid: "000000192",
+    custom: {
+      customer: { full_name: "Lucky Luke" },
+      billing_address: "A Cowboy doesn't have an address. Sorry",
+    },
+    items: 0,
+  },
+];
+
 const RootDomNode = document.getElementById("root");
 const Root = ReactDOM.createRoot(RootDomNode);
 
@@ -45,7 +80,19 @@ const Header = createReactClass({
 const Orders = createReactClass({
   render() {
     return (
-      <JSXZ in="orders" sel=".header">
+      <JSXZ in="orders" sel=".orders">
+        <Z sel=".orders-table-body">
+          {OrdersData.map((order, index) => (
+            <JSXZ in="orders" sel=".orderlinebody" key={order.remoteid}>
+              <Z sel=".command-number > .text-block">{order.remoteid}</Z>
+              <Z sel=".customer > .text-block">
+                {order.custom.customer.full_name}
+              </Z>
+              <Z sel=".address > .text-block">{order.custom.billing_address}</Z>
+              <Z sel=".quantity > .text-block">{order.items}</Z>
+            </JSXZ>
+          ))}
+        </Z>
       </JSXZ>
     );
   },
