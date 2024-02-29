@@ -146,7 +146,14 @@ const Orders = createReactClass({
                 {order.custom.billing_address.email}
               </Z>
               <Z sel=".quantity > .text-block">{order.custom.items.length}</Z>
-              <Z sel=".order-link > a" tag="a" href={"/order/" + order.id}>
+              <Z
+                sel=".order-link > a"
+                tag="a"
+                onClick={() => {
+                  goTo("order", order.id, null);
+                  return false;
+                }}
+              >
                 <ChildrenZ />
               </Z>
             </JSXZ>
@@ -167,15 +174,22 @@ const Order = createReactClass({
     return (
       <JSXZ in="order" sel=".container">
         <Z sel="h1">{"Order #" + order.remoteid}</Z>
-        <Z sel=".order-general-data > .client">Client : {order.custom.customer.full_name}</Z>
-        <Z sel=".order-general-data > .address">Address : {order.custom.billing_address.street[0]} {order.custom.billing_address.city}</Z>
+        <Z sel=".order-general-data > .client">
+          Client : {order.custom.customer.full_name}
+        </Z>
+        <Z sel=".order-general-data > .address">
+          Address : {order.custom.billing_address.street[0]}{" "}
+          {order.custom.billing_address.city}
+        </Z>
         <Z sel=".order-items-body">
           {order.custom.items.map((item) => (
             <JSXZ in="order" sel=".order-items-line" key={item.item_id}>
               <Z sel=".product-name">{item.product_title}</Z>
               <Z sel=".quantity">{item.quantity_to_fetch}</Z>
               <Z sel=".unit-price">{item.unit_price}</Z>
-              <Z sel=".total-price">{item.unit_price * item.quantity_to_fetch}</Z>
+              <Z sel=".total-price">
+                {item.unit_price * item.quantity_to_fetch}
+              </Z>
             </JSXZ>
           ))}
         </Z>
@@ -195,7 +209,7 @@ const Routes = {
   },
   order: {
     path: (params) => {
-      return "/order/" + params;
+      return "/order/" + (params || "");
     },
     match: (path, qs) => {
       const matchResult = new RegExp("/order/([^/]*)$").exec(path);
@@ -285,7 +299,9 @@ function onPathChange() {
 
 function goTo(route, params, query) {
   const qs = Qs.stringify(query);
+  console.log(qs);
   const url = Routes[route].path(params) + (qs == "" ? "" : "?" + qs);
+  console.log(url);
   history.pushState({}, "", url);
   onPathChange();
 }
