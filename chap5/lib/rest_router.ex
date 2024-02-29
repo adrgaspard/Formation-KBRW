@@ -6,14 +6,14 @@ defmodule RestRouter do
   plug(:match)
   plug(:dispatch)
 
-  get "/" do
+  get "/orders/" do
     case Database.search([]) |> Enum.map(fn {_, value} -> value end) do
       :wrong_format -> send_bad_request(conn)
       data -> send_resp(conn, 200, to_json_response(data))
     end
   end
 
-  get "/search" do
+  get "/orders/search" do
     conn = fetch_query_params(conn)
     criterias = conn.params |> Map.to_list()
     IO.inspect criterias
@@ -23,14 +23,14 @@ defmodule RestRouter do
     end
   end
 
-  get "/:id" do
+  get "/order/:id" do
     case Database.get(id) do
       {:ok, data} -> send_resp(conn, 200, to_json_response(data))
       :not_found -> send_page_not_found(conn)
     end
   end
 
-  post "/" do
+  post "/order" do
     case parse_body_string(conn) do
       {:ok, body} ->
         case body["id"] do
@@ -45,7 +45,7 @@ defmodule RestRouter do
     end
   end
 
-  put "/:id" do
+  put "/order/:id" do
     case parse_body_string(conn) do
       {:ok, body} ->
         case body["id"] do
@@ -60,7 +60,7 @@ defmodule RestRouter do
     end
   end
 
-  delete "/:id" do
+  delete "/order/:id" do
     case Database.delete(id) do
       :deleted ->
         send_resp(conn, 204, "")

@@ -5,7 +5,7 @@ defmodule Chap5 do
   def start(_type, _args) do
     children = [
       {Database, [name: :db_default]},
-      {Plug.Cowboy, scheme: :http, plug: StaticRouter, options: [port: 4002]}
+      {Plug.Cowboy, scheme: :http, plug: MainRouter, options: [port: 4002]}
     ]
     opts = [strategy: :one_for_one, name: Chap5.Supervisor]
     pid = Supervisor.start_link(children, opts)
