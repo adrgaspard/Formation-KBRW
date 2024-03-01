@@ -6,46 +6,38 @@ const Cookie = require("cookie");
 const XMLHttpRequest = require("xhr2");
 
 require("!!file-loader?name=[name].[ext]!./index.html");
+require("./webflow/css/modal.css");
 require("./webflow/css/order.css");
 require("./webflow/css/orders.css");
 
-const OrdersData = [
-  {
-    remoteid: "000000189",
-    custom: {
-      customer: { full_name: "TOTO & CIE" },
-      billing_address: "Some where in the world",
-    },
-    items: 2,
-  },
-  {
-    remoteid: "000000190",
-    custom: {
-      customer: { full_name: "Looney Toons" },
-      billing_address: "The Warner Bros Company",
-    },
-    items: 3,
-  },
-  {
-    remoteid: "000000191",
-    custom: {
-      customer: { full_name: "Asterix & Obelix" },
-      billing_address: "Armorique",
-    },
-    items: 29,
-  },
-  {
-    remoteid: "000000192",
-    custom: {
-      customer: { full_name: "Lucky Luke" },
-      billing_address: "A Cowboy doesn't have an address. Sorry",
-    },
-    items: 0,
-  },
-];
-
 const RootDomNode = document.getElementById("root");
 const Root = ReactDOM.createRoot(RootDomNode);
+
+function className() {
+  const args = arguments;
+  const classes = {};
+  for (const i in args) {
+    const arg = args[i];
+    if (!arg) {
+      continue;
+    }
+    if ("string" === typeof arg || "number" === typeof arg) {
+      arg
+        .split(" ")
+        .filter((c) => c != "")
+        .map((c) => {
+          classes[c] = true;
+        });
+    } else if ("object" === typeof arg) {
+      for (var key in arg) {
+        classes[key] = arg[key];
+      }
+    }
+  }
+  return Object.keys(classes)
+    .map((k) => (classes[k] && k) || "")
+    .join(" ");
+}
 
 const HTTP = new (function () {
   this.get = (url) => this.req("GET", url);
@@ -104,11 +96,42 @@ const NotFound = createReactClass({
 });
 
 const Layout = createReactClass({
+  modal(spec) {
+    this.setState({
+      modal: {
+        ...spec,
+        callback: (res) => {
+          this.setState({ modal: null }, () => {
+            if (spec.callback) {
+              spec.callback(res);
+            }
+          });
+        },
+      },
+    });
+  },
+  getInitialState() {
+    return { modal: null };
+  },
   render() {
+    let modalComponent = {
+      delete: (props) => <DeleteModal {...props} />,
+    }[this.state.modal && this.state.modal.type];
+    modalComponent = modalComponent && modalComponent(this.state.modal);
+    const props = {
+      ...this.props,
+      modal: this.modal,
+    };
     return (
       <JSXZ in="orders" sel=".layout">
         <Z sel=".layout-container">
-          <this.props.Child {...this.props} />
+          <this.props.Child {...props} />
+        </Z>
+        <Z
+          sel=".modal-wrapper"
+          className={className(classNameZ, { hidden: !modalComponent })}
+        >
+          {modalComponent}
         </Z>
       </JSXZ>
     );
@@ -156,6 +179,28 @@ const Orders = createReactClass({
               >
                 <ChildrenZ />
               </Z>
+              <Z
+                sel=".delete > a"
+                tag="a"
+                onClick={() => {
+                  this.props.modal({
+                    type: "delete",
+                    title: "Order deletion",
+                    message: `Are you sure you want to delete this ?`,
+                    callback: (value) => {
+                      if (value) {
+                        const url = ApiBase + Routes.order.path(order.id);
+                        HTTP.delete(url).finally(() => {
+                          goTo("", null, null);
+                        });
+                      }
+                    },
+                  });
+                  return false;
+                }}
+              >
+                <ChildrenZ />
+              </Z>
             </JSXZ>
           ))}
         </Z>
@@ -170,7 +215,6 @@ const Order = createReactClass({
   },
   render() {
     const order = this.props.order.value;
-    console.log(order);
     return (
       <JSXZ in="order" sel=".container">
         <Z sel="h1">{"Order #" + order.remoteid}</Z>
@@ -197,6 +241,7 @@ const Order = createReactClass({
     );
   },
 });
+const ApiBase = "/api"
 
 const Routes = {
   orders: {
@@ -222,6 +267,23 @@ const Routes = {
     },
   },
 };
+
+const DeleteModal = createReactClass({
+  render() {
+    const callback = this.props.callback;
+    return (
+      <JSXZ in="modal" sel=".modal-content">
+        <Z sel=".modal-text">{this.props.message}</Z>
+        <Z sel=".modal-cancel" tag="a" onClick={() => callback(false)}>
+          <ChildrenZ />
+        </Z>
+        <Z sel=".modal-confirm" tag="a" onClick={() => callback(true)}>
+          <ChildrenZ />
+        </Z>
+      </JSXZ>
+    );
+  },
+});
 
 let BrowserState = { Child: Child };
 
@@ -299,9 +361,7 @@ function onPathChange() {
 
 function goTo(route, params, query) {
   const qs = Qs.stringify(query);
-  console.log(qs);
   const url = Routes[route].path(params) + (qs == "" ? "" : "?" + qs);
-  console.log(url);
   history.pushState({}, "", url);
   onPathChange();
 }
