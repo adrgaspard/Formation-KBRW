@@ -6,6 +6,7 @@ const Cookie = require("cookie");
 const XMLHttpRequest = require("xhr2");
 
 require("!!file-loader?name=[name].[ext]!./index.html");
+require("./webflow/css/loader.css");
 require("./webflow/css/modal.css");
 require("./webflow/css/order.css");
 require("./webflow/css/orders.css");
@@ -110,10 +111,21 @@ const Layout = createReactClass({
       },
     });
   },
+  loader(spec) {
+    this.setState({
+      loader: true,
+    });
+    return new Promise((onSuccess, onError) => {
+      spec.then(() => {
+        this.setState({ loader: false });
+      });
+    });
+  },
   getInitialState() {
-    return { modal: null };
+    return { modal: null, loader: false };
   },
   render() {
+    const loaderComponent = <Loader />;
     let modalComponent = {
       delete: (props) => <DeleteModal {...props} />,
     }[this.state.modal && this.state.modal.type];
@@ -121,6 +133,7 @@ const Layout = createReactClass({
     const props = {
       ...this.props,
       modal: this.modal,
+      loader: this.loader,
     };
     return (
       <JSXZ in="orders" sel=".layout">
@@ -132,6 +145,12 @@ const Layout = createReactClass({
           className={className(classNameZ, { hidden: !modalComponent })}
         >
           {modalComponent}
+        </Z>
+        <Z
+          sel=".loader-wrapper"
+          className={className(classNameZ, { hidden: !this.state.loader })}
+        >
+          {loaderComponent}
         </Z>
       </JSXZ>
     );
@@ -189,10 +208,17 @@ const Orders = createReactClass({
                     message: `Are you sure you want to delete this ?`,
                     callback: (value) => {
                       if (value) {
-                        const url = ApiBase + Routes.order.path(order.id);
-                        HTTP.delete(url).finally(() => {
-                          goTo("", null, null);
-                        });
+                        this.props.loader(
+                          new Promise((onSuccess, onError) => {
+                            const url = ApiBase + Routes.order.path(order.id);
+                            HTTP.delete(url)
+                              .then((res) => {
+                                delete BrowserState.orders;
+                                goTo("orders", null, null);
+                              })
+                              .then(() => {onSuccess()});
+                          })
+                        );
                       }
                     },
                   });
@@ -241,7 +267,7 @@ const Order = createReactClass({
     );
   },
 });
-const ApiBase = "/api"
+const ApiBase = "/api";
 
 const Routes = {
   orders: {
@@ -282,6 +308,12 @@ const DeleteModal = createReactClass({
         </Z>
       </JSXZ>
     );
+  },
+});
+
+const Loader = createReactClass({
+  render() {
+    return <JSXZ in="loader" sel=".loader-content" />;
   },
 });
 
