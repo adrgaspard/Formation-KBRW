@@ -1,6 +1,8 @@
 defmodule Riak do
   def url, do: "https://kbrw-sb-tutoex-riak-gateway.kbrw.fr"
-  def bucket, do: "adrgaspard_orders"
+  def orders_bucket, do: "adrgaspard_orders"
+  def orders_schema_name, do: "adrgaspard_orders_schema"
+  def orders_schema_path, do: "./schemas/order_schema.xml"
 
   def auth_header do
     username = "sophomore"
@@ -9,36 +11,82 @@ defmodule Riak do
     [{'authorization', 'Basic #{auth}'}]
   end
 
-  def put(key, object) do
-    {:ok, {{_, code, _message}, _headers, body}} = :httpc.request(:put, {'#{Riak.url}/buckets/#{Riak.bucket}/keys/#{key}', Riak.auth_header(), 'application/json', object}, [], [])
+  def get(bucket_name, key) do
+    {:ok, {{_, code, _message}, _headers, body}} = :httpc.request(:get, {'#{Riak.url}/buckets/#{bucket_name}/keys/#{key}', Riak.auth_header()}, [], [])
+    case code do
+      code when is_number(code) and code >= 200 and code < 400 -> {:ok, {code, Poison.decode!(body)}}
+      code -> {:error, {code, body}}
+    end
+  end
+
+  def put(bucket_name, key, object) do
+    {:ok, {{_, code, _message}, _headers, body}} = :httpc.request(:put, {'#{Riak.url}/buckets/#{bucket_name}/keys/#{key}', Riak.auth_header(), 'application/json', object}, [], [])
     case code do
       code when is_number(code) and code >= 200 and code < 400 -> {:ok, {code, body}}
       code -> {:error, {code, body}}
     end
   end
 
-  def list_buckets do
+  def delete(bucket_name, key) do
+    {:ok, {{_, code, _message}, _headers, body}} = :httpc.request(:delete, {'#{Riak.url}/buckets/#{bucket_name}/keys/#{key}', Riak.auth_header()}, [], [])
+    case code do
+      code when is_number(code) and code >= 200 and code < 400 -> {:ok, {code, body}}
+      code -> {:error, {code, body}}
+    end
+  end
+
+  def get_buckets do
     {:ok, {{_, 200, _message}, _headers, body}} = :httpc.request(:get, {'#{Riak.url}/buckets?buckets=true', Riak.auth_header()}, [], [])
     {:ok, body}
   end
 
-  def list_keys do
-    {:ok, {{_, 200, _message}, _headers, body}} = :httpc.request(:get, {'#{Riak.url}/buckets/#{Riak.bucket}/keys?keys=true', Riak.auth_header()}, [], [])
+  def get_keys(bucket_name) do
+    {:ok, {{_, 200, _message}, _headers, body}} = :httpc.request(:get, {'#{Riak.url}/buckets/#{bucket_name}/keys?keys=true', Riak.auth_header()}, [], [])
     {:ok, body}
   end
 
-  def get(key) do
-    {:ok, {{_, code, _message}, _headers, body}} = :httpc.request(:get, {'#{Riak.url}/buckets/#{Riak.bucket}/keys/#{key}', Riak.auth_header()}, [], [])
-    case code do
-      code when is_number(code) and code >= 200 and code < 400 -> {:ok, {code, Poison.decode!(body)}}
-      code -> {:error, {code, body}}
-  end
-
-  def delete(key) do
-    {:ok, {{_, code, _message}, _headers, body}} = :httpc.request(:delete, {'#{Riak.url}/buckets/#{Riak.bucket}/keys/#{key}', Riak.auth_header()}, [], [])
+  def get_schema(schema_name) do
+    {:ok, {{_, code, _message}, _headers, body}} = :httpc.request(:get, {'#{Riak.url}/search/schema/#{schema_name}', Riak.auth_header()}, [], [])
     case code do
       code when is_number(code) and code >= 200 and code < 400 -> {:ok, {code, body}}
       code -> {:error, {code, body}}
     end
   end
+
+  def put_schema(schema_name, schema_path) do
+    schema = File.read!(schema_path)
+    {:ok, {{_, code, _message}, _headers, body}} = :httpc.request(:put, {'#{Riak.url}/search/schema/#{schema_name}', Riak.auth_header(), 'application/xml', schema}, [], [])
+    case code do
+      code when is_number(code) and code >= 200 and code < 400 -> {:ok, {code, body}}
+      code -> {:error, {code, body}}
+    end
+  end
+
+  def get_indexes() do
+    {:ok, {{_, code, _message}, _headers, body}} = :httpc.request(:get, {'#{Riak.url}/search/index', Riak.auth_header()}, [], [])
+    case code do
+      code when is_number(code) and code >= 200 and code < 400 -> {:ok, {code, body}}
+      code -> {:error, {code, body}}
+    end
+  end
+
+  def put_index(index_name, schema_name) do
+    content = "{\"schema\": \"#{schema_name}\"}"
+    {:ok, {{_, code, _message}, _headers, body}} = :httpc.request(:put, {'#{Riak.url}/search/index/#{index_name}', Riak.auth_header(), 'application/json', content}, [], [])
+    case code do
+      code when is_number(code) and code >= 200 and code < 400 -> {:ok, {code, body}}
+      code -> {:error, {code, body}}
+    end
+  end
+
+  def assign_index(index_name, bucket_name) do
+    object = "{\"props\": {\"search_index\": \"#{index_name}\"}}"
+    {:ok, {{_, code, _message}, _headers, body}} = :httpc.request(:put, {'#{Riak.url}/buckets/#{bucket_name}/props', Riak.auth_header(), 'application/json', object}, [], [])
+    case code do
+      code when is_number(code) and code >= 200 and code < 400 -> {:ok, {code, body}}
+      code -> {:error, {code, body}}
+    end
+  end
+
+
 end
