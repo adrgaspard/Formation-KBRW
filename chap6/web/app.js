@@ -130,15 +130,14 @@ const Layout = createReactClass({
       delete: (props) => <DeleteModal {...props} />,
     }[this.state.modal && this.state.modal.type];
     modalComponent = modalComponent && modalComponent(this.state.modal);
-    const props = {
-      ...this.props,
-      modal: this.modal,
-      loader: this.loader,
-    };
     return (
       <JSXZ in="orders" sel=".layout">
         <Z sel=".layout-container">
-          <this.props.Child {...props} />
+          <this.props.Child
+            {...this.props}
+            modal={this.modal}
+            loader={this.loader}
+          />
         </Z>
         <Z
           sel=".modal-wrapper"
@@ -173,6 +172,23 @@ const Orders = createReactClass({
   statics: {
     remoteProps: [RemoteProps.orders],
   },
+  getInitialState() {
+    return { ...this.state, page: 0 };
+  },
+  pagination(page) {
+    if (page < 0) {
+      page = 0;
+    }
+    this.setState(
+      {
+        page: page,
+      },
+      () => {
+        delete BrowserState.orders;
+        goTo("orders", `?page=${this.state.page}`, null);
+      }
+    );
+  },
   render() {
     const orders = (this.props.orders && this.props.orders.value) || [];
     return (
@@ -181,13 +197,13 @@ const Orders = createReactClass({
           {orders.map((order) => (
             <JSXZ in="orders" sel=".orderlinebody" key={order.remoteid}>
               <Z sel=".command-number > .text-block">{order.remoteid}</Z>
-              <Z sel=".customer > .text-block">
+              {/* <Z sel=".customer > .text-block">
                 {order.custom.customer.full_name}
               </Z>
               <Z sel=".address > .text-block">
                 {order.custom.billing_address.email}
               </Z>
-              <Z sel=".quantity > .text-block">{order.custom.items.length}</Z>
+              <Z sel=".quantity > .text-block">{order.custom.items.length}</Z> */}
               <Z
                 sel=".order-link > a"
                 tag="a"
@@ -214,9 +230,15 @@ const Orders = createReactClass({
                             HTTP.delete(url)
                               .then((res) => {
                                 delete BrowserState.orders;
-                                goTo("orders", null, null);
+                                goTo(
+                                  "orders",
+                                  `?page=${this.state.page}`,
+                                  null
+                                );
                               })
-                              .then(() => {onSuccess()});
+                              .then(() => {
+                                onSuccess();
+                              });
                           })
                         );
                       }
@@ -230,6 +252,37 @@ const Orders = createReactClass({
             </JSXZ>
           ))}
         </Z>
+        <Z
+          sel=".first-page"
+          tag="a"
+          onClick={() => {
+            this.pagination(0);
+            return false;
+          }}
+        >
+          <ChildrenZ />
+        </Z>
+        <Z
+          sel=".previous-page"
+          tag="a"
+          onClick={() => {
+            this.pagination(this.state.page - 1);
+            return false;
+          }}
+        >
+          <ChildrenZ />
+        </Z>
+        <Z
+          sel=".next-page"
+          tag="a"
+          onClick={() => {
+            this.pagination(this.state.page + 1);
+            return false;
+          }}
+        >
+          <ChildrenZ />
+        </Z>
+        <Z sel=".current-page">{this.state.page + 1}</Z>
       </JSXZ>
     );
   },
@@ -244,7 +297,7 @@ const Order = createReactClass({
     return (
       <JSXZ in="order" sel=".container">
         <Z sel="h1">{"Order #" + order.remoteid}</Z>
-        <Z sel=".order-general-data > .client">
+        {/* <Z sel=".order-general-data > .client">
           Client : {order.custom.customer.full_name}
         </Z>
         <Z sel=".order-general-data > .address">
@@ -262,7 +315,7 @@ const Order = createReactClass({
               </Z>
             </JSXZ>
           ))}
-        </Z>
+        </Z> */}
       </JSXZ>
     );
   },
@@ -272,9 +325,16 @@ const ApiBase = "/api";
 const Routes = {
   orders: {
     path: (params) => {
-      return "/";
+      return "/" + params;
     },
     match: (path, qs) => {
+      const matchResult = new RegExp("/([^/]*)$").exec(path);
+      return (
+        matchResult && {
+          handlerPath: [Layout, Header, Orders],
+          order_id: matchResult[1],
+        }
+      );
       return path == "/" && { handlerPath: [Layout, Header, Orders] };
     },
   },

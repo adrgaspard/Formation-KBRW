@@ -7,26 +7,44 @@ defmodule RestRouter do
   plug(:dispatch)
 
   get "/orders/" do
-    case Database.search([]) |> Enum.map(fn {_, value} -> value end) do
-      :wrong_format -> send_bad_request(conn)
-      data -> send_resp(conn, 200, to_json_response(data))
-    end
-  end
-
-  get "/orders/search" do
     conn = fetch_query_params(conn)
-    criterias = conn.params |> Map.to_list()
-    IO.inspect criterias
-    case Database.search(criterias) |> Enum.map(fn {_, value} -> value end) do
-      :wrong_format -> send_bad_request(conn)
-      data -> send_resp(conn, 200, to_json_response(data))
-    end
+    page = if_whitespace_nil_else_escape(conn.query_params["page"])
+    rows = if_whitespace_nil_else_escape(conn.query_params["rows"])
+    sort = if_whitespace_nil_else_escape(conn.query_params["sort"])
+    IO.inspect page
+    query = conn.query_params
+      |> Enum.map(fn
+        {key, value} ->
+          with clean_key <- key |> String.trim() |> Riak.escape(),
+               clean_value <- value && value |> String.trim() |> Riak.escape() do
+            {clean_key, clean_value}
+          end
+      end)
+      |> Enum.filter(fn {key, value} ->
+        key not in ["", "page", "rows", "sort"] and value not in [nil, ""]
+      end)
+      |> Enum.map(fn {key, value} -> "#{key}:#{value}" end)
+      |> Enum.join(" AND ")
+    query =
+      URI.encode_www_form(
+        case String.length(query) do
+          length when length > 0 -> query
+          _ -> "*:*"
+        end
+      )
+    {:ok, {_, response}} = Riak.search(Riak.orders_index_name(), query, page, rows, sort)
+    data =
+      case response["docs"] do
+        [] -> %{}
+        result -> result
+      end
+    send_resp(conn, 200, to_json_response(data))
   end
 
   get "/order/:id" do
-    case Database.get(id) do
-      {:ok, data} -> send_resp(conn, 200, to_json_response(data))
-      :not_found -> send_page_not_found(conn)
+    case Riak.get(Riak.orders_bucket, id) do
+      {:ok, {_, response}} -> send_resp(conn, 200, to_json_response(response))
+      _ -> send_page_not_found(conn)
     end
   end
 
@@ -35,9 +53,9 @@ defmodule RestRouter do
       {:ok, body} ->
         case body["id"] do
           id when is_binary(id) ->
-            case Database.post(id, body) do
-              {:created, result} -> send_resp(conn, 201, to_json_response(result))
-              :already_exists -> send_conflict(conn)
+            case Riak.put(Riak.orders_bucket, id, body) do
+              {:ok, {_, response}} -> send_resp(conn, 201, to_json_response(response))
+              _ -> send_page_not_found(conn)
             end
           _ -> send_bad_request(conn)
         end
@@ -51,8 +69,8 @@ defmodule RestRouter do
         case body["id"] do
           body_id when is_binary(body_id) and id == body_id ->
             case Database.put(id, body) do
-              {:updated, result} -> send_resp(conn, 200, to_json_response(result))
-              :not_found -> send_page_not_found(conn)
+              {:ok, {_, response}} -> send_resp(conn, 200, to_json_response(response))
+              _ -> send_page_not_found(conn)
             end
           _ -> send_bad_request(conn)
         end
@@ -61,10 +79,9 @@ defmodule RestRouter do
   end
 
   delete "/order/:id" do
-    case Database.delete(id) do
-      :deleted ->
-        send_resp(conn, 204, "")
-      :not_found -> send_page_not_found(conn)
+    case Riak.delete(Riak.orders_bucket, id) do
+      {:ok, {_, _}} -> send_resp(conn, 204, "")
+      _ -> send_page_not_found(conn)
     end
   end
 
@@ -76,23 +93,41 @@ defmodule RestRouter do
     put_resp_header(conn, "content-type", "application/json")
   end
 
-  defp to_json_error(error) do Poison.encode!(%{"error" => error}) end
+  defp to_json_error(error) do
+    Poison.encode!(%{"error" => error})
+  end
 
-  defp to_json_response(data) do Poison.encode!(data) end
+  defp to_json_response(data) do
+    Poison.encode!(data)
+  end
 
-  defp send_page_not_found(conn) do send_resp(conn, 404, to_json_error("Page Not Found")) end
+  defp send_page_not_found(conn) do
+    send_resp(conn, 404, to_json_error("Page Not Found"))
+  end
 
-  defp send_bad_request(conn) do send_resp(conn, 400, to_json_error("Bad Request")) end
-
-  defp send_conflict(conn) do send_resp(conn, 409, to_json_error("Conflict")) end
+  defp send_bad_request(conn) do
+    send_resp(conn, 400, to_json_error("Bad Request"))
+  end
 
   defp parse_body_string(conn) do
     case Plug.Conn.read_body(conn) do
-      {:ok, data, _conn} -> case Poison.decode(data) do
-        {:ok, value} -> {:ok, value}
-        {:error, error} -> {:error, error}
-      end
+      {:ok, data, _conn} ->
+        case Poison.decode(data) do
+          {:ok, value} -> {:ok, value}
+          {:error, error} -> {:error, error}
+        end
       {:error, error} -> {:error, error}
     end
   end
+
+  defp if_whitespace_nil_else_escape(string) do
+    case string do
+      nil -> nil
+      str -> case String.trim(str) do
+        "" -> nil
+        trimed -> Riak.escape(trimed)
+      end
+    end
+  end
+
 end

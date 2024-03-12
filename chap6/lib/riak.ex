@@ -104,4 +104,48 @@ defmodule Riak do
       code -> {:err, {code, body}}
     end
   end
+
+  def search(index, query, page, rows, sort) do
+    page = case page do
+      nil -> 0
+      value -> value
+    end
+    rows = case rows do
+      nil -> 30
+      value -> value
+    end
+    sort = case sort do
+      nil -> "creation_date_index"
+      value -> value
+    end
+    {:ok, {{_, code, _message}, _headers, body}} = :httpc.request(:get, {'#{Riak.url}/search/query/#{index}/?wt=json&q=#{query}&start=#{page}&rows=#{rows}&sort=#{sort}%20ASC', Riak.auth_header()}, [], [])
+    case code do
+      code when is_number(code) and code >= 200 and code < 400 ->
+        parsed_body = Poison.decode!(body)
+        {:ok, {code, parsed_body["response"]}}
+      code -> {:err, {code, body}}
+    end
+  end
+
+  def escape(string) do
+    string = String.replace string, "+", "\\+"
+    string = String.replace string, "-", "\\-"
+    string = String.replace string, "&&", "\\&\\&"
+    string = String.replace string, "||", "\\|\\|"
+    string = String.replace string, "!", "\\!"
+    string = String.replace string, "(", "\\("
+    string = String.replace string, ")", "\\)"
+    string = String.replace string, "{", "\\{"
+    string = String.replace string, "}", "\\}"
+    string = String.replace string, "[", "\\["
+    string = String.replace string, "]", "\\]"
+    string = String.replace string, "^", "\\^"
+    string = String.replace string, "\"", "\\\""
+    string = String.replace string, "~", "\\~"
+    string = String.replace string, "*", "\\*"
+    string = String.replace string, "?", "\\?"
+    string = String.replace string, ":", "\\:"
+    string = String.replace string, "/", "\\/"
+    String.replace string, "\\", "%5C"
+  end
 end
