@@ -12,4 +12,11 @@ defmodule JsonLoader do
       err -> err
     end
   end
+
+  def load_to_riak(json_file) do
+    {:ok, content} = File.read json_file
+    objects = Poison.decode!(content, %{}) |> Enum.map(fn elem -> {elem["id"], elem} end)
+    task = Task.async_stream(objects, fn object -> Riak.put(Riak.orders_bucket, elem(object, 0), Poison.encode!(elem(object, 1))) end, max_concurrency: 4)
+    Stream.run task
+  end
 end

@@ -16,7 +16,7 @@ defmodule Riak do
     {:ok, {{_, code, _message}, _headers, body}} = :httpc.request(:get, {'#{Riak.url}/buckets/#{bucket_name}/keys/#{key}', Riak.auth_header()}, [], [])
     case code do
       code when is_number(code) and code >= 200 and code < 400 -> {:ok, {code, Poison.decode!(body)}}
-      code -> {:error, {code, body}}
+      code -> {:err, {code, body}}
     end
   end
 
@@ -24,7 +24,7 @@ defmodule Riak do
     {:ok, {{_, code, _message}, _headers, body}} = :httpc.request(:put, {'#{Riak.url}/buckets/#{bucket_name}/keys/#{key}', Riak.auth_header(), 'application/json', object}, [], [])
     case code do
       code when is_number(code) and code >= 200 and code < 400 -> {:ok, {code, body}}
-      code -> {:error, {code, body}}
+      code -> {:err, {code, body}}
     end
   end
 
@@ -32,7 +32,7 @@ defmodule Riak do
     {:ok, {{_, code, _message}, _headers, body}} = :httpc.request(:delete, {'#{Riak.url}/buckets/#{bucket_name}/keys/#{key}', Riak.auth_header()}, [], [])
     case code do
       code when is_number(code) and code >= 200 and code < 400 -> {:ok, {code, body}}
-      code -> {:error, {code, body}}
+      code -> {:err, {code, body}}
     end
   end
 
@@ -53,7 +53,7 @@ defmodule Riak do
     {:ok, {{_, code, _message}, _headers, body}} = :httpc.request(:delete, {'#{Riak.url}/buckets/#{bucket_name}/props', Riak.auth_header()}, [], [])
     case code do
       code when is_number(code) and code >= 200 and code < 400 -> {:ok, {code, body}}
-      code -> {:error, {code, body}}
+      code -> {:err, {code, body}}
     end
   end
 
@@ -66,7 +66,7 @@ defmodule Riak do
     {:ok, {{_, code, _message}, _headers, body}} = :httpc.request(:get, {'#{Riak.url}/search/schema/#{schema_name}', Riak.auth_header()}, [], [])
     case code do
       code when is_number(code) and code >= 200 and code < 400 -> {:ok, {code, body}}
-      code -> {:error, {code, body}}
+      code -> {:err, {code, body}}
     end
   end
 
@@ -75,7 +75,7 @@ defmodule Riak do
     {:ok, {{_, code, _message}, _headers, body}} = :httpc.request(:put, {'#{Riak.url}/search/schema/#{schema_name}', Riak.auth_header(), 'application/xml', schema}, [], [])
     case code do
       code when is_number(code) and code >= 200 and code < 400 -> {:ok, {code, body}}
-      code -> {:error, {code, body}}
+      code -> {:err, {code, body}}
     end
   end
 
@@ -83,7 +83,7 @@ defmodule Riak do
     {:ok, {{_, code, _message}, _headers, body}} = :httpc.request(:get, {'#{Riak.url}/search/index', Riak.auth_header()}, [], [])
     case code do
       code when is_number(code) and code >= 200 and code < 400 -> {:ok, {code, body}}
-      code -> {:error, {code, body}}
+      code -> {:err, {code, body}}
     end
   end
 
@@ -92,7 +92,7 @@ defmodule Riak do
     {:ok, {{_, code, _message}, _headers, body}} = :httpc.request(:put, {'#{Riak.url}/search/index/#{index_name}', Riak.auth_header(), 'application/json', content}, [], [])
     case code do
       code when is_number(code) and code >= 200 and code < 400 -> {:ok, {code, body}}
-      code -> {:error, {code, body}}
+      code -> {:err, {code, body}}
     end
   end
 
@@ -101,7 +101,7 @@ defmodule Riak do
     {:ok, {{_, code, _message}, _headers, body}} = :httpc.request(:put, {'#{Riak.url}/buckets/#{bucket_name}/props', Riak.auth_header(), 'application/json', object}, [], [])
     case code do
       code when is_number(code) and code >= 200 and code < 400 -> {:ok, {code, body}}
-      code -> {:error, {code, body}}
+      code -> {:err, {code, body}}
     end
   end
 end
