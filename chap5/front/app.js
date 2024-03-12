@@ -83,19 +83,6 @@ const RemoteProps = {
   },
 };
 
-const Child = createReactClass({
-  render() {
-    const [ChildHandler, ...rest] = this.props.handlerPath;
-    return <ChildHandler {...this.props} handlerPath={rest} />;
-  },
-});
-
-const NotFound = createReactClass({
-  render() {
-    return <h1>Page Not Found</h1>;
-  },
-});
-
 const Layout = createReactClass({
   modal(spec) {
     this.setState({
@@ -130,15 +117,10 @@ const Layout = createReactClass({
       delete: (props) => <DeleteModal {...props} />,
     }[this.state.modal && this.state.modal.type];
     modalComponent = modalComponent && modalComponent(this.state.modal);
-    const props = {
-      ...this.props,
-      modal: this.modal,
-      loader: this.loader,
-    };
     return (
       <JSXZ in="orders" sel=".layout">
         <Z sel=".layout-container">
-          <this.props.Child {...props} />
+          <this.props.Child {...this.props} modal={this.modal} loader={this.loader} />
         </Z>
         <Z
           sel=".modal-wrapper"
@@ -269,6 +251,33 @@ const Order = createReactClass({
 });
 const ApiBase = "/api";
 
+
+const DeleteModal = createReactClass({
+  render() {
+    const callback = this.props.callback;
+    return (
+      <JSXZ in="modal" sel=".modal-content">
+        <Z sel=".modal-text">{this.props.message}</Z>
+        <Z sel=".modal-cancel" tag="a" onClick={() => callback(false)}>
+          <ChildrenZ />
+        </Z>
+        <Z sel=".modal-confirm" tag="a" onClick={() => callback(true)}>
+          <ChildrenZ />
+        </Z>
+      </JSXZ>
+    );
+  },
+});
+
+const Loader = createReactClass({
+  render() {
+    return <JSXZ in="loader" sel=".loader-content" />;
+  },
+});
+
+
+
+
 const Routes = {
   orders: {
     path: (params) => {
@@ -294,28 +303,19 @@ const Routes = {
   },
 };
 
-const DeleteModal = createReactClass({
+const Child = createReactClass({
   render() {
-    const callback = this.props.callback;
-    return (
-      <JSXZ in="modal" sel=".modal-content">
-        <Z sel=".modal-text">{this.props.message}</Z>
-        <Z sel=".modal-cancel" tag="a" onClick={() => callback(false)}>
-          <ChildrenZ />
-        </Z>
-        <Z sel=".modal-confirm" tag="a" onClick={() => callback(true)}>
-          <ChildrenZ />
-        </Z>
-      </JSXZ>
-    );
+    const [ChildHandler, ...rest] = this.props.handlerPath;
+    return <ChildHandler {...this.props} handlerPath={rest} />;
   },
 });
 
-const Loader = createReactClass({
+const NotFound = createReactClass({
   render() {
-    return <JSXZ in="loader" sel=".loader-content" />;
+    return <h1>Page Not Found</h1>;
   },
 });
+
 
 let BrowserState = { Child: Child };
 

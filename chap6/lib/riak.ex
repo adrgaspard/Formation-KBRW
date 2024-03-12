@@ -1,6 +1,7 @@
 defmodule Riak do
   def url, do: "https://kbrw-sb-tutoex-riak-gateway.kbrw.fr"
   def orders_bucket, do: "adrgaspard_orders"
+  def orders_index_name, do: "adrgaspard_orders_index"
   def orders_schema_name, do: "adrgaspard_orders_schema"
   def orders_schema_path, do: "./schemas/order_schema.xml"
 
@@ -38,6 +39,22 @@ defmodule Riak do
   def get_buckets do
     {:ok, {{_, 200, _message}, _headers, body}} = :httpc.request(:get, {'#{Riak.url}/buckets?buckets=true', Riak.auth_header()}, [], [])
     {:ok, body}
+  end
+
+  def clear_bucket(bucket_name) do
+    keys = Poison.decode!(elem(Riak.get_keys(bucket_name), 1))["keys"]
+    task = Task.async_stream(keys, fn item -> Riak.delete(bucket_name, item) end)
+    Stream.run(task)
+    {:ok}
+  end
+
+  def delete_bucket(bucket_name) do
+    Riak.clear_bucket(bucket_name)
+    {:ok, {{_, code, _message}, _headers, body}} = :httpc.request(:delete, {'#{Riak.url}/buckets/#{bucket_name}/props', Riak.auth_header()}, [], [])
+    case code do
+      code when is_number(code) and code >= 200 and code < 400 -> {:ok, {code, body}}
+      code -> {:error, {code, body}}
+    end
   end
 
   def get_keys(bucket_name) do
@@ -87,6 +104,4 @@ defmodule Riak do
       code -> {:error, {code, body}}
     end
   end
-
-
 end
