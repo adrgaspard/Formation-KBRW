@@ -11,7 +11,6 @@ defmodule RestRouter do
     page = if_whitespace_nil_else_escape(conn.query_params["page"])
     rows = if_whitespace_nil_else_escape(conn.query_params["rows"])
     sort = if_whitespace_nil_else_escape(conn.query_params["sort"])
-    IO.inspect page
     query = conn.query_params
       |> Enum.map(fn
         {key, value} ->
