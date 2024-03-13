@@ -1,5 +1,4 @@
 const ReactDOM = require("react-dom/client");
-const React = require("react");
 const Qs = require("qs");
 const XMLHttpRequest = require("xhr2");
 

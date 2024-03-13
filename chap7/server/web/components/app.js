@@ -3,16 +3,16 @@ const createReactClass = require("create-react-class");
 const Qs = require("qs");
 const Cookie = require("cookie");
 const { Root, ApiBase, HTTP, RemoteProps, addRemoteProps } = require("./utils.js");
-const Child = require("./components/base/child.js");
-const NotFound = require("./components/base/not_found.js");
-const Layout = require("./components/layout.js");
-const Header = require("./components/header.js");
+const Child = require("./base/child.js");
+const NotFound = require("./base/not_found.js");
+const Layout = require("./layout.js");
+const Header = require("./header.js");
 
-require("!!file-loader?name=[name].[ext]!./index.html");
-require("./webflow/css/loader.css");
-require("./webflow/css/modal.css");
-require("./webflow/css/order.css");
-require("./webflow/css/orders.css");
+require("!!file-loader?name=[name].[ext]!../index.html");
+require("../webflow/css/loader.css");
+require("../webflow/css/modal.css");
+require("../webflow/css/order.css");
+require("../webflow/css/orders.css");
 
 let BrowserState = { Child: Child }
 

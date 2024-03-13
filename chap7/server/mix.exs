@@ -23,9 +23,9 @@ defmodule MyApp.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:reaxt, tag: "v4.0.2", github: "kbrw/reaxt"},
       {:poison, "~> 4.0"},
       {:plug_cowboy, "~> 2.4"},
-      {:reaxt, tag: "v4.0.2", github: "kbrw/reaxt"}
     ]
   end
 end

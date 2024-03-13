@@ -1,6 +1,6 @@
 const React = require("react");
 const createReactClass = require("create-react-class");
-const { className } = require("../utils.js");
+const { className } = require("./utils.js");
 const DeleteModal = require("./base/delete_modal.js");
 const Loader = require("./base/loader.js");
 
