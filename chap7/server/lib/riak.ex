@@ -1,8 +1,8 @@
 defmodule Riak do
   def url, do: "https://kbrw-sb-tutoex-riak-gateway.kbrw.fr"
-  def orders_bucket, do: "adrgaspard_orders"
-  def orders_index_name, do: "adrgaspard_orders_index"
-  def orders_schema_name, do: "adrgaspard_orders_schema"
+  def orders_bucket, do: "vlu_orders"
+  def orders_index_name, do: "vlu_orders_index"
+  def orders_schema_name, do: "vlu_orders_schema"
   def orders_schema_path, do: "./schemas/order_schema.xml"
 
   def auth_header do
