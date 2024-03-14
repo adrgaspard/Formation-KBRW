@@ -13,7 +13,6 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "^5.0.1",
-    "reaxt": "^0.0.0",
     "web-vitals": "^2.1.4",
     "webpack": "^5.90.3",
     "xhr2": "^0.2.1"
@@ -27,6 +26,7 @@
     "create-react-class": "^15.7.0",
     "jsx": "^0.9.89",
     "null-loader": "^4.0.1",
+    "reaxt": "file:reaxt.tgz",
     "webpack-cli": "^5.1.4"
   }
 }

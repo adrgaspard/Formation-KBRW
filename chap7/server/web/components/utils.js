@@ -1,9 +1,10 @@
 const ReactDOM = require("react-dom/client");
 const Qs = require("qs");
 const XMLHttpRequest = require("xhr2");
+const Localhost = require("reaxt/config").localhost;
 
-const RootDomNode = document.getElementById("root");
-const Root = ReactDOM.createRoot(RootDomNode);
+const RootDomNode = typeof document !== "undefined" ? document.getElementById("root") : null;
+const Root = RootDomNode !== null ? ReactDOM.createRoot(RootDomNode) : null;
 
 const ApiBase = "/api";
 
@@ -15,6 +16,7 @@ const HTTP = new (function () {
   this.req = (method, url, data) =>
     new Promise((resolve, reject) => {
       const req = new XMLHttpRequest();
+      url = typeof window !== "undefined" ? url : Localhost + url;
       req.open(method, url);
       req.responseType = "text";
       req.setRequestHeader("accept", "application/json,*/*;0.8");
@@ -76,45 +78,10 @@ function className() {
     .join(" ");
 }
 
-function addRemoteProps(props) {
-  return new Promise((resolve, reject) => {
-    let remoteProps = Array.prototype.concat.apply(
-      [],
-      props.handlerPath.map((c) => c.remoteProps).filter((p) => p)
-    );
-    remoteProps = remoteProps
-      .map((spec_fun) => spec_fun(props))
-      .filter((specs) => specs)
-      .filter(
-        (specs) => !props[specs.prop] || props[specs.prop].url != specs.url
-      );
-    if (remoteProps.length == 0) {
-      return resolve(props);
-    }
-    const promiseMapper = (spec) => {
-      return HTTP.get(spec.url).then((res) => {
-        spec.value = res;
-        return spec;
-      });
-    };
-    const reducer = (acc, spec) => {
-      acc[spec.prop] = { url: spec.url, value: spec.value };
-      return acc;
-    };
-    const promiseArray = remoteProps.map(promiseMapper);
-    return Promise.all(promiseArray)
-      .then((xs) => xs.reduce(reducer, props), reject)
-      .then((p) => {
-        return addRemoteProps(p).then(resolve, reject);
-      }, reject);
-  });
-}
-
 module.exports = {
   Root,
   ApiBase,
   HTTP,
   RemoteProps,
   className,
-  addRemoteProps,
 };
