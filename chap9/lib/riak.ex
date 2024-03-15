@@ -21,9 +21,10 @@ defmodule Riak do
   end
 
   def put(bucket_name, key, object) do
-    {:ok, {{_, code, _message}, _headers, body}} = :httpc.request(:put, {'#{@url}/buckets/#{bucket_name}/keys/#{key}', Riak.auth_header(), 'application/json', object}, [], [])
+    {:ok, {{_, code, _message}, _headers, body}} = :httpc.request(:put, {'#{@url}/buckets/#{bucket_name}/keys/#{key}', Riak.auth_header(), 'application/json', Poison.encode!(object)}, [], [])
     case code do
-      code when is_number(code) and code >= 200 and code < 400 -> {:ok, {code, body}}
+      code when is_number(code) and code >= 200 and code < 400 ->
+        {:ok, {code, Poison.decode!(object)}}
       code -> {:err, {code, body}}
     end
   end
@@ -158,7 +159,7 @@ defmodule Riak do
         _ ->
           order_status = Map.put(order["status"], "state", "init")
           order = Map.put(order, "status" , order_status)
-          Riak.put(Riak.orders_bucket, key, Poison.encode!(order))
+          Riak.put(Riak.orders_bucket, key, order)
         end
     end, max_concurrency: 5)
     Stream.run task

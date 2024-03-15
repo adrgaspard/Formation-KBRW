@@ -33,7 +33,7 @@ defmodule OrderTransitor do
   def handle_call(:pay, _from, state) do
     case ExFSM.Machine.event(state, {:process_payment, []}) do
       {:next_state, updated_order} ->
-        {:ok, _} = Riak.put(Riak.orders_bucket, state["id"], Poison.encode!(updated_order))
+        {:ok, _} = Riak.put(Riak.orders_bucket, state["id"], updated_order)
         {:reply, updated_order, updated_order, @timeout}
       _ -> {:reply, :action_unavailable, state, @timeout}
     end
@@ -43,7 +43,7 @@ defmodule OrderTransitor do
   def handle_call(:verify, _from, state) do
     case ExFSM.Machine.event(state, {:verification, []}) do
       {:next_state, updated_order} ->
-        {:ok, _} = Riak.put(Riak.orders_bucket, state["id"], Poison.encode!(updated_order))
+        {:ok, _} = Riak.put(Riak.orders_bucket, state["id"], updated_order)
         {:reply, updated_order, updated_order, @timeout}
       _ -> {:reply, :action_unavailable, state, @timeout}
     end
