@@ -7,6 +7,7 @@ defmodule MyApp do
   def start(_type, _args) do
     children = [
       {Database, [name: :db_default]},
+      OrderSupervisor,
       {Plug.Cowboy, scheme: :http, plug: MainRouter, options: [port: @webserver_port]}
     ]
     opts = [strategy: :one_for_one, name: MyApp.Supervisor]

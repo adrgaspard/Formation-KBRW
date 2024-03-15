@@ -1,7 +1,7 @@
 defimpl ExFSM.Machine.State, for: Map do
   def state_name(order), do: String.to_atom(order["status"]["state"])
   def set_state_name(order, name), do: put_in(order, ["status", "state"], Atom.to_string(name))
-  def handlers(order) do: [OrderFSM]
+  def handlers(order), do: [OrderFSM]
 end
 
 defmodule OrderFSM do

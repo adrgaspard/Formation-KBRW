@@ -40,6 +40,24 @@ defmodule RestRouter do
     send_resp(conn, 200, to_json_response(data))
   end
 
+  get "/order/:id/pay" do
+    pid = OrderSupervisor.fetch_child(id)
+    result = OrderTransitor.pay_order(pid)
+    case result do
+      :action_unavailable -> send_bad_request(conn)
+      _ -> send_resp(conn, 200, to_json_response(result))
+    end
+  end
+
+  get "/order/:id/verify" do
+    pid = OrderSupervisor.fetch_child(id)
+    result = OrderTransitor.verify_order(pid)
+    case result do
+      :action_unavailable -> send_bad_request(conn)
+      _ -> send_resp(conn, 200, to_json_response(result))
+    end
+  end
+
   get "/order/:id" do
     case Riak.get(Riak.orders_bucket, id) do
       {:ok, {_, response}} -> send_resp(conn, 200, to_json_response(response))
